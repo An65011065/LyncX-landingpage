@@ -1,4 +1,5 @@
 import React from "react";
+import StoriesDemo from "./StoriesDemo";
 
 export const Hero: React.FC = () => {
     return (
@@ -31,7 +32,7 @@ export const Hero: React.FC = () => {
 
                 {/* Content will be added in separate components */}
                 <div className="h-[500px] bg-white p-8 flex items-center justify-center text-[var(--muted-text)]">
-                    Demo Content (To be implemented)
+                    <StoriesDemo />
                 </div>
             </div>
         </section>

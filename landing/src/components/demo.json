@@ -1,0 +1,105 @@
+{
+    "currentSession": {
+        "date": "2024-03-19",
+        "startTime": 1710806400000,
+        "endTime": 1710892800000,
+        "stats": {
+            "totalUrls": 150,
+            "uniqueUrls": 45,
+            "uniqueDomains": 20,
+            "workTime": 18000000,
+            "socialTime": 7200000,
+            "otherTime": 3600000,
+            "totalTime": 28800000
+        },
+        "tabSessions": [
+            {
+                "tabId": 1,
+                "windowId": 1,
+                "openedAt": 1710806400000,
+                "closedAt": 1710892800000,
+                "totalActiveTime": 7200000,
+                "urlVisits": [
+                    {
+                        "id": "1_1710806400000",
+                        "url": "https://github.com/example/repo",
+                        "domain": "github.com",
+                        "title": "Example Repository",
+                        "startTime": 1710806400000,
+                        "endTime": 1710810000000,
+                        "duration": 3600000,
+                        "activeTime": 3000000,
+                        "lastActiveTime": 1710810000000,
+                        "tabId": 1,
+                        "windowId": 1,
+                        "isActive": false,
+                        "category": "work",
+                        "creationMode": "chain"
+                    },
+                    {
+                        "id": "1_1710810000000",
+                        "url": "https://youtube.com/watch?v=example",
+                        "domain": "youtube.com",
+                        "title": "Example Video",
+                        "startTime": 1710810000000,
+                        "endTime": 1710813600000,
+                        "duration": 3600000,
+                        "activeTime": 3000000,
+                        "lastActiveTime": 1710813600000,
+                        "tabId": 1,
+                        "windowId": 1,
+                        "isActive": false,
+                        "category": "social",
+                        "creationMode": "hyperlink"
+                    }
+                ]
+            },
+            {
+                "tabId": 2,
+                "windowId": 1,
+                "openedAt": 1710813600000,
+                "closedAt": 1710892800000,
+                "totalActiveTime": 7200000,
+                "urlVisits": [
+                    {
+                        "id": "2_1710813600000",
+                        "url": "https://docs.google.com/document",
+                        "domain": "docs.google.com",
+                        "title": "Example Document",
+                        "startTime": 1710813600000,
+                        "endTime": 1710817200000,
+                        "duration": 3600000,
+                        "activeTime": 3000000,
+                        "lastActiveTime": 1710817200000,
+                        "tabId": 2,
+                        "windowId": 1,
+                        "isActive": false,
+                        "category": "work",
+                        "creationMode": "chain"
+                    },
+                    {
+                        "id": "2_1710817200000",
+                        "url": "https://chat.openai.com",
+                        "domain": "chat.openai.com",
+                        "title": "ChatGPT",
+                        "startTime": 1710817200000,
+                        "endTime": 1710820800000,
+                        "duration": 3600000,
+                        "activeTime": 3000000,
+                        "lastActiveTime": 1710820800000,
+                        "tabId": 2,
+                        "windowId": 1,
+                        "isActive": false,
+                        "category": "work",
+                        "creationMode": "chain"
+                    }
+                ]
+            }
+        ]
+    },
+    "cardType": "overview",
+    "isAutoPlaying": false,
+    "currentIndex": 0,
+    "totalCards": 6,
+    "isDarkMode": false
+}
