@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    :root {
+        --accent-color: #3f51b5;
+        --bg: #fcfcf7;
+        --card-bg: #fefefe;
+        --border: #e2e2e2;
+        --text: #111;
+        --muted-text: #666;
+        --light-gray: #f8f8f8;
+        --productive: #28a745;
+        --leisure: #ff6b6b;
+    }
+}
