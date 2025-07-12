@@ -36,7 +36,7 @@ export const Header: React.FC = () => {
                         Privacy
                     </a>
                     <a
-                        href="#pricing"
+                        href="#pricingpage"
                         className="text-sm font-medium text-[var(--muted-text)] hover:text-[var(--text)] transition-colors"
                     >
                         Pricing

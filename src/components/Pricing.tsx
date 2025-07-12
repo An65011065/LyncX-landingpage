@@ -94,7 +94,11 @@ const PricingPage = () => {
     };
 
     return (
-        <section ref={sectionRef} className="min-h-screenbg-[var(--bg)] py-20">
+        <section
+            ref={sectionRef}
+            className="min-h-screenbg-[var(--bg)] py-20"
+            id="pricingpage"
+        >
             <div className="max-w-7xl mx-auto px-6">
                 {/* Header */}
                 <div className="text-center mb-16">
@@ -105,10 +109,10 @@ const PricingPage = () => {
                                 : "opacity-0 translate-y-8"
                         }`}
                     >
-                        <h2 className="text-5xl font-semibold tracking-tight mb-6 text-gray-900">
+                        <h2 className="text-5xl font-semibold tracking-tight mb-2 text-gray-900">
                             Choose your plan
                         </h2>
-                        <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-12">
+                        <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-14">
                             Start with a 14-day free trial. No credit card
                             required.
                         </p>

@@ -1,4 +1,3 @@
-
 const Footer = () => {
     return (
         <footer className="relative bg-[var(--bg)] py-20 overflow-hidden">
