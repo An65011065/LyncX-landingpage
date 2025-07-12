@@ -360,8 +360,8 @@ const ProblemAgitationSection: React.FC = () => {
                 >
                     <div className="text-center max-w-4xl px-8">
                         <h2 className="text-4xl md:text-5xl font-bold mb-4 text-gray-800 font-['Playfair_Display']">
-                            Your browser was supposed to make you more
-                            productive. Instead, it's doing the opposite.
+                            Every browser promises to make you faster. Most just
+                            make you busier.
                         </h2>
                         <p className="text-lg md:text-xl text-gray-600 font-['Droid_Serif'] italic">
                             Let's look at the evidence.
