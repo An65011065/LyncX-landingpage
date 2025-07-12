@@ -109,7 +109,7 @@ const PricingPage = () => {
                                 : "opacity-0 translate-y-8"
                         }`}
                     >
-                        <h2 className="text-5xl font-semibold tracking-tight mb-3 text-gray-900">
+                        <h2 className="text-5xl font-semibold tracking-tight mb-3 mt-10 text-gray-900">
                             Choose your plan
                         </h2>
                         <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-14">
