@@ -1,6 +1,6 @@
 // pages/auth.tsx or app/auth/page.tsx (depending on your Next.js version)
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useNavigate, useLocation } from "react-router-dom";
 import { initializeApp } from "firebase/app";
 import {
     getAuth,
@@ -32,12 +32,13 @@ export default function AuthPage() {
     const [error, setError] = useState<string | null>(null);
     const [isExtensionAuth, setIsExtensionAuth] = useState(false);
 
-    const searchParams = useSearchParams();
-    const router = useRouter();
+    const searchParams = useLocation();
+    const router = useNavigate();
 
     useEffect(() => {
         // Check if this is from extension
-        const source = searchParams.get("source");
+        const params = new URLSearchParams(searchParams.search);
+        const source = params.get("source");
         const isFromExtension = source === "extension";
         setIsExtensionAuth(isFromExtension);
 
@@ -49,7 +50,7 @@ export default function AuthPage() {
                     notifyExtensionSuccess();
                 } else {
                     // Regular web auth - redirect to dashboard
-                    router.push("/dashboard");
+                    router("/dashboard");
                 }
             }
         });
@@ -192,13 +193,7 @@ export default function AuthPage() {
                     </p>
 
                     {/* Reuse your existing pricing component */}
-                    <PricingSection
-                        onSelectPlan={(plan) => {
-                            console.log("Selected plan:", plan);
-                            // Could store plan selection, then auth
-                            handleSignIn();
-                        }}
-                    />
+                    <PricingSection />
 
                     <div className="mt-12">
                         <button
