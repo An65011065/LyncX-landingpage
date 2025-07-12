@@ -1,9 +1,13 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 
-const WeeklyInsights = ({ isDarkMode = false }) => {
+interface WeeklyInsightsProps {
+    isDarkMode?: boolean;
+}
+
+const WeeklyInsights = ({ isDarkMode = false }: WeeklyInsightsProps) => {
     const [viewMode, setViewMode] = useState("scores");
     const [chartHeight, setChartHeight] = useState(0);
-    const chartContainerRef = useRef(null);
+    const chartContainerRef = useRef<HTMLDivElement>(null);
 
     // Hardcoded data for the week
     const data = {
@@ -44,7 +48,7 @@ const WeeklyInsights = ({ isDarkMode = false }) => {
             ? nonZeroValues.reduce((a, b) => a + b, 0) / nonZeroValues.length
             : 0;
 
-    const formatScreenTime = (milliseconds) => {
+    const formatScreenTime = (milliseconds: number) => {
         if (milliseconds === 0) return "0m";
         const hours = Math.floor(milliseconds / (1000 * 60 * 60));
         const minutes = Math.floor(
@@ -56,14 +60,14 @@ const WeeklyInsights = ({ isDarkMode = false }) => {
         return `${minutes}m`;
     };
 
-    const getBarHeight = (value) => {
+    const getBarHeight = (value: number) => {
         if (currentData.length === 0 || value === 0) return 0;
         const maxHeight = chartHeight * 0.8;
         const baseHeight = 8;
         return Math.max(baseHeight, (value / maxValue) * maxHeight);
     };
 
-    const getAverageLinePosition = (avgValue) => {
+    const getAverageLinePosition = (avgValue: number) => {
         const CHART_BOTTOM_OFFSET = 24;
         if (currentData.length === 0 || avgValue === 0)
             return CHART_BOTTOM_OFFSET;
@@ -75,7 +79,7 @@ const WeeklyInsights = ({ isDarkMode = false }) => {
         return "#4285f4"; // Blue for both modes
     };
 
-    const isToday = (index) => {
+    const isToday = (index: number) => {
         // Today is Saturday (last bar)
         return index === 6;
     };

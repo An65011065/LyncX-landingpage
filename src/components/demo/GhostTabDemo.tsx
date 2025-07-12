@@ -1,8 +1,12 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Ghost } from "lucide-react";
 
-const GhostTab = ({ isDarkMode = false }) => {
-    const [hoveredUrl, setHoveredUrl] = useState(null);
+interface GhostTabProps {
+    isDarkMode?: boolean;
+}
+
+const GhostTab = ({ isDarkMode = false }: GhostTabProps) => {
+    const [hoveredUrl, setHoveredUrl] = useState<string | null>(null);
 
     // Hardcoded data for 8 URLs
     const wasteData = [
@@ -86,7 +90,7 @@ const GhostTab = ({ isDarkMode = false }) => {
         avgTimeToClose: 3600000, // 1 hour
     };
 
-    const formatTime = (ms) => {
+    const formatTime = (ms: number) => {
         const minutes = Math.floor(ms / (1000 * 60));
         const hours = Math.floor(minutes / 60);
         if (hours > 0) {
@@ -95,7 +99,7 @@ const GhostTab = ({ isDarkMode = false }) => {
         return `${minutes}m`;
     };
 
-    const formatHours = (ms) => {
+    const formatHours = (ms: number) => {
         const hours = ms / (1000 * 60 * 60);
         if (hours >= 1) {
             return `${hours.toFixed(1)}h`;
@@ -165,7 +169,8 @@ const GhostTab = ({ isDarkMode = false }) => {
                                     alt={urlData.domain}
                                     className="w-4 h-4 rounded"
                                     onError={(e) => {
-                                        const target = e.target;
+                                        const target =
+                                            e.target as HTMLImageElement;
                                         target.style.display = "none";
                                         const parent = target.parentElement;
                                         if (parent) {

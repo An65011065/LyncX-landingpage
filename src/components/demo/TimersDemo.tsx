@@ -1,7 +1,11 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Timer, Circle, Trash2 } from "lucide-react";
 
-const Timers = ({ isDarkMode = false }) => {
+interface TimersProps {
+    isDarkMode?: boolean;
+}
+
+const Timers = ({ isDarkMode = false }: TimersProps) => {
     const [isDeleteMode, setIsDeleteMode] = useState(false);
 
     // Hardcoded timers data - static times that don't tick down
@@ -26,11 +30,7 @@ const Timers = ({ isDarkMode = false }) => {
         // Do nothing - just visual
     };
 
-    const handleDeleteTimer = (domain) => {
-        // Do nothing - just visual
-    };
-
-    const formatTimeRemaining = (timeRemaining) => {
+    const formatTimeRemaining = (timeRemaining: string) => {
         return timeRemaining;
     };
 
@@ -132,7 +132,6 @@ const Timers = ({ isDarkMode = false }) => {
 
                     {/* Timer Items */}
                     {timers.map((timer) => {
-                        const isExpired = false; // Never expired in hardcoded version
                         return (
                             <div key={timer.id} className="relative">
                                 <div

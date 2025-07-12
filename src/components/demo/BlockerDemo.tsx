@@ -1,11 +1,23 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Lock } from "lucide-react";
 
-const WebsiteBlocker = ({ isDarkMode = false }) => {
+interface WebsiteBlockerProps {
+    isDarkMode?: boolean;
+}
+
+interface BlockedSite {
+    domain: string;
+    startTime: number;
+    endTime: number;
+    timezone: string;
+    status: string;
+}
+
+const WebsiteBlocker = ({ isDarkMode = false }: WebsiteBlockerProps) => {
     const [domain, setDomain] = useState("");
     const [startTime, setStartTime] = useState("14:00");
     const [endTime, setEndTime] = useState("15:00");
-    const [isLocked, setIsLocked] = useState(false);
+    const [isLocked] = useState(false);
 
     // Hardcoded blocked sites data
     const blockedSites = [
@@ -40,20 +52,20 @@ const WebsiteBlocker = ({ isDarkMode = false }) => {
         // Do nothing - just visual
     };
 
-    const handleBlock = (e) => {
+    const handleBlock = (e: React.FormEvent) => {
         e.preventDefault();
         // Do nothing - just visual
     };
 
-    const handleUnblock = (domain) => {
+    const handleUnblock = (_domain: string) => {
         // Do nothing - just visual
     };
 
-    const handleUnblockClick = (domain) => {
+    const handleUnblockClick = (_domain: string) => {
         // Do nothing - just visual
     };
 
-    const formatScheduledTime = (site) => {
+    const formatScheduledTime = (site: BlockedSite) => {
         if (!site.timezone) return "Unknown timezone";
 
         const startFormatted = new Date(site.startTime).toLocaleString(
@@ -79,11 +91,11 @@ const WebsiteBlocker = ({ isDarkMode = false }) => {
         return `${startFormatted} - ${endFormatted}`;
     };
 
-    const isExpired = (endTime) => {
+    const isExpired = (endTime: number) => {
         return endTime - Date.now() <= 0;
     };
 
-    const getBlockStatus = (site) => {
+    const getBlockStatus = (site: BlockedSite) => {
         const now = Date.now();
         if (site.endTime <= now) {
             return "Expired";

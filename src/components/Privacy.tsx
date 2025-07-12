@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
     Shield,
     Database,
@@ -11,8 +11,8 @@ import {
 
 const PrivacyPage = () => {
     const [scrollPhase, setScrollPhase] = useState("intro");
-    const [expandedFeature, setExpandedFeature] = useState(null);
-    const privacyRef = useRef(null);
+    const [expandedFeature, setExpandedFeature] = useState<number | null>(null);
+    const privacyRef = useRef<HTMLElement>(null);
 
     const features = [
         {
@@ -107,8 +107,8 @@ const PrivacyPage = () => {
         };
     }, [handleScroll]);
 
-    const getColorClasses = (color) => {
-        const colors = {
+    const getColorClasses = (color: string) => {
+        const colors: Record<string, string> = {
             green: "text-green-600 bg-green-50 border-green-200",
             blue: "text-blue-600 bg-blue-50 border-blue-200",
             purple: "text-purple-600 bg-purple-50 border-purple-200",

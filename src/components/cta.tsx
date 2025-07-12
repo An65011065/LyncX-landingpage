@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 
 const CTASection = () => {
     const [scrollPhase, setScrollPhase] = useState("intro");
-    const sectionRef = useRef(null);
+    const sectionRef = useRef<HTMLElement>(null);
 
     const handleScroll = useCallback(() => {
         if (!sectionRef.current) return;

@@ -1,5 +1,14 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Check } from "lucide-react";
+
+interface Plan {
+    name: string;
+    subtitle: string;
+    monthlyPrice: number;
+    yearlyPrice: number;
+    isPopular?: boolean;
+    features: string[];
+}
 
 const PricingPage = () => {
     const [isVisible, setIsVisible] = useState(false);
@@ -68,20 +77,13 @@ const PricingPage = () => {
         },
     ];
 
-    const getDisplayPrice = (plan) => {
+    const getDisplayPrice = (plan: Plan) => {
         if (plan.monthlyPrice === 0) return "Free";
         const price =
             billingPeriod === "yearly"
                 ? (plan.yearlyPrice / 12).toFixed(2)
                 : plan.monthlyPrice.toFixed(2);
         return `$${price}`;
-    };
-
-    const getFullPrice = (plan) => {
-        if (plan.monthlyPrice === 0) return null;
-        return billingPeriod === "yearly"
-            ? plan.yearlyPrice
-            : plan.monthlyPrice;
     };
 
     const getSavingsPercentage = () => {

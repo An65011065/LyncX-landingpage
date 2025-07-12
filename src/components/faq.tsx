@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { ChevronDown } from "lucide-react";
 
 const FAQSection = () => {
     const [scrollPhase, setScrollPhase] = useState("intro");
-    const [openFAQ, setOpenFAQ] = useState(null);
-    const sectionRef = useRef(null);
+    const [openFAQ, setOpenFAQ] = useState<number | null>(null);
+    const sectionRef = useRef<HTMLElement>(null);
 
     const faqs = [
         {

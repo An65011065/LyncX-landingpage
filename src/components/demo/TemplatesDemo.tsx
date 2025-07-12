@@ -1,9 +1,10 @@
-import React, { useState } from "react";
 import { Layout, Circle } from "lucide-react";
 
-const Templates = ({ isDarkMode = false }) => {
-    const [isDeleteMode, setIsDeleteMode] = useState(false);
+interface TemplatesProps {
+    isDarkMode?: boolean;
+}
 
+const Templates = ({ isDarkMode = false }: TemplatesProps) => {
     // Hardcoded templates data
     const templates = [
         {
@@ -44,11 +45,7 @@ const Templates = ({ isDarkMode = false }) => {
         // Do nothing - just visual
     };
 
-    const handleOpenTemplate = (template) => {
-        // Do nothing - just visual
-    };
-
-    const handleDeleteTemplate = (templateName) => {
+    const handleOpenTemplate = (_template: any) => {
         // Do nothing - just visual
     };
 

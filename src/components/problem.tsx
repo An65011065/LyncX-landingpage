@@ -75,7 +75,6 @@ const ProblemAgitationSection: React.FC = () => {
     const handleScroll = useCallback(() => {
         if (!sectionRef.current) return;
 
-        const rect = sectionRef.current.getBoundingClientRect();
         const windowHeight = window.innerHeight;
         const currentScrollTop = window.scrollY;
 
@@ -85,7 +84,7 @@ const ProblemAgitationSection: React.FC = () => {
         }
 
         // Determine scroll direction
-        const scrollingDown = currentScrollTop > lastScrollTop;
+
         setLastScrollTop(currentScrollTop);
 
         // Calculate which step we're on based on scroll position

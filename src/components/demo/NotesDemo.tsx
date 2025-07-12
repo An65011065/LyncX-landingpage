@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import { useState, useRef } from "react";
 import {
     FileText,
     Search,
@@ -12,76 +12,96 @@ import {
     ExternalLink,
 } from "lucide-react";
 
-const NotesOverview = ({ isDarkMode = false }) => {
+interface Note {
+    domain: string;
+    content: string;
+    lastModified: number;
+    createdAt: number;
+}
+
+interface NotesOverviewProps {
+    isDarkMode?: boolean;
+}
+
+const NotesOverview = ({ isDarkMode = false }: NotesOverviewProps) => {
     const [searchQuery, setSearchQuery] = useState("");
     const [isSearchExpanded, setIsSearchExpanded] = useState(false);
     const [isAddingNote, setIsAddingNote] = useState(false);
     const [newNoteDomain, setNewNoteDomain] = useState("");
     const [newNoteContent, setNewNoteContent] = useState("");
-    const [selectedNote, setSelectedNote] = useState(null);
+    const [selectedNote, setSelectedNote] = useState<Note | null>(null);
     const [isSaving, setSaving] = useState(false);
     const [copyMessage, setCopyMessage] = useState("");
-    const textareaRef = useRef(null);
-    const searchInputRef = useRef(null);
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const searchInputRef = useRef<HTMLInputElement>(null);
 
     // Hardcoded notes data
     const notes = [
         {
             domain: "x.com",
-            content: "Check out the new AI research thread by @elonmusk about neural interfaces and brain-computer connectivity breakthroughs",
+            content:
+                "Check out the new AI research thread by @elonmusk about neural interfaces and brain-computer connectivity breakthroughs",
             lastModified: Date.now() - 3600000, // 1 hour ago
             createdAt: Date.now() - 86400000, // 1 day ago
         },
         {
             domain: "arxiv.org",
-            content: "Interesting paper on transformer architecture improvements - potential 40% efficiency gains in language models",
+            content:
+                "Interesting paper on transformer architecture improvements - potential 40% efficiency gains in language models",
             lastModified: Date.now() - 7200000, // 2 hours ago
             createdAt: Date.now() - 172800000, // 2 days ago
         },
         {
             domain: "canvas.instructure.com",
-            content: "Assignment deadline: Machine Learning project due Friday 11:59 PM - remember to submit both code and documentation",
+            content:
+                "Assignment deadline: Machine Learning project due Friday 11:59 PM - remember to submit both code and documentation",
             lastModified: Date.now() - 10800000, // 3 hours ago
             createdAt: Date.now() - 259200000, // 3 days ago
         },
         {
             domain: "dashboard.shutterstock.com",
-            content: "Downloaded high-res images for client project - reference numbers: SS-12345, SS-67890 for marketing campaign",
+            content:
+                "Downloaded high-res images for client project - reference numbers: SS-12345, SS-67890 for marketing campaign",
             lastModified: Date.now() - 14400000, // 4 hours ago
             createdAt: Date.now() - 345600000, // 4 days ago
         },
         {
             domain: "github.com",
-            content: "Fix the authentication bug in user login flow - issue #247 needs to be resolved before next sprint",
+            content:
+                "Fix the authentication bug in user login flow - issue #247 needs to be resolved before next sprint",
             lastModified: Date.now() - 18000000, // 5 hours ago
             createdAt: Date.now() - 432000000, // 5 days ago
-        }
+        },
     ];
 
-    const handleSaveNote = (domain, content) => {
+    const handleSaveNote = (_domain: string, content: string) => {
         setSaving(true);
         // Simulate saving delay
         setTimeout(() => {
             setSaving(false);
             if (selectedNote) {
-                setSelectedNote(prev => ({
-                    ...prev,
-                    content,
-                    lastModified: Date.now(),
-                }));
+                setSelectedNote((prev) =>
+                    prev
+                        ? {
+                              ...prev,
+                              content,
+                              lastModified: Date.now(),
+                          }
+                        : null,
+                );
             }
         }, 500);
     };
 
     const handleAddNote = () => {
         if (!newNoteDomain.trim() || !newNoteContent.trim()) return;
-        
+
         setNewNoteDomain("");
         setNewNoteContent("");
         setIsAddingNote(false);
     };
 
-    const handleCopyNote = async (content) => {
+    const handleCopyNote = async (content: string) => {
         if (content.trim()) {
             try {
                 await navigator.clipboard.writeText(content);
@@ -93,19 +113,24 @@ const NotesOverview = ({ isDarkMode = false }) => {
         }
     };
 
-    const addTimestamp = (content, setContent) => {
+    const addTimestamp = (
+        content: string,
+        setContent: (content: string) => void,
+    ) => {
         const timestamp = new Date().toLocaleString();
-        const newText = content + (content ? "\n\n" : "") + `--- ${timestamp} ---\n`;
+        const newText =
+            content + (content ? "\n\n" : "") + `--- ${timestamp} ---\n`;
         setContent(newText);
         setTimeout(() => {
             if (textareaRef.current) {
                 textareaRef.current.focus();
-                textareaRef.current.selectionStart = textareaRef.current.selectionEnd = newText.length;
+                textareaRef.current.selectionStart =
+                    textareaRef.current.selectionEnd = newText.length;
             }
         }, 0);
     };
 
-    const formatLastModified = (timestamp) => {
+    const formatLastModified = (timestamp: number) => {
         const date = new Date(timestamp);
         return date.toLocaleDateString("en-US", {
             month: "short",
@@ -113,15 +138,17 @@ const NotesOverview = ({ isDarkMode = false }) => {
         });
     };
 
-    const getPreviewText = (content) => {
+    const getPreviewText = (content: string) => {
         if (!content || typeof content !== "string") {
             return "";
         }
         const firstLine = content.split("\n")[0];
-        return firstLine.length > 80 ? firstLine.slice(0, 80) + "..." : firstLine;
+        return firstLine.length > 80
+            ? firstLine.slice(0, 80) + "..."
+            : firstLine;
     };
 
-    const openLink = (domain) => {
+    const openLink = (domain: string) => {
         window.open(`https://${domain}`, "_blank");
     };
 
@@ -141,13 +168,17 @@ const NotesOverview = ({ isDarkMode = false }) => {
     );
 
     // Render note editor (used for both viewing and editing)
-    const renderNoteEditor = (note, onClose, isNew = false) => {
+    const renderNoteEditor = (
+        note: Note,
+        onClose: () => void,
+        isNew = false,
+    ) => {
         const editorClasses = `absolute inset-0 ${
             isDarkMode
                 ? "bg-black bg-opacity-95 border-white border-opacity-20"
                 : "bg-white border-gray-200"
         } rounded-2xl flex flex-col p-5 border shadow-xl backdrop-blur-sm`;
-        
+
         return (
             <div className={editorClasses}>
                 {/* Header */}
@@ -174,10 +205,14 @@ const NotesOverview = ({ isDarkMode = false }) => {
                                     <input
                                         type="text"
                                         value={newNoteDomain}
-                                        onChange={(e) => setNewNoteDomain(e.target.value)}
+                                        onChange={(e) =>
+                                            setNewNoteDomain(e.target.value)
+                                        }
                                         placeholder="Enter domain..."
                                         className={`bg-transparent border-none outline-none text-lg placeholder-gray-400 ${
-                                            isDarkMode ? "text-white" : "text-black"
+                                            isDarkMode
+                                                ? "text-white"
+                                                : "text-black"
                                         }`}
                                     />
                                 ) : (
@@ -210,7 +245,11 @@ const NotesOverview = ({ isDarkMode = false }) => {
                                     isNew ? newNoteContent : note.content,
                                     isNew
                                         ? setNewNoteContent
-                                        : (content) => handleSaveNote(note.domain, content),
+                                        : (content) =>
+                                              handleSaveNote(
+                                                  note.domain,
+                                                  content,
+                                              ),
                                 )
                             }
                             className={`p-2 rounded-lg transition-colors ${
@@ -223,7 +262,11 @@ const NotesOverview = ({ isDarkMode = false }) => {
                             <Calendar size={16} />
                         </button>
                         <button
-                            onClick={() => handleCopyNote(isNew ? newNoteContent : note.content)}
+                            onClick={() =>
+                                handleCopyNote(
+                                    isNew ? newNoteContent : note.content,
+                                )
+                            }
                             className={`p-2 rounded-lg transition-colors ${
                                 isDarkMode
                                     ? "bg-white bg-opacity-10 hover:bg-opacity-20 text-white"
@@ -431,14 +474,17 @@ const NotesOverview = ({ isDarkMode = false }) => {
                                 : "text-gray-500"
                         }`}
                     >
-                        {searchQuery ? "No matching notes found" : "No notes yet"}
+                        {searchQuery
+                            ? "No matching notes found"
+                            : "No notes yet"}
                     </div>
                 )}
             </div>
 
             {/* Note Editor Modal */}
-            {selectedNote && renderNoteEditor(selectedNote, () => setSelectedNote(null))}
-            
+            {selectedNote &&
+                renderNoteEditor(selectedNote, () => setSelectedNote(null))}
+
             {/* New Note Modal */}
             {isAddingNote &&
                 renderNoteEditor(

@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from "react";
-import type { LucideIcon } from "lucide-react";
 import {
     Timer,
     Search,
@@ -13,15 +12,10 @@ import {
     Bookmark,
     Brain,
     Zap,
-    Clock,
-    Target,
-    Eye,
-    Link2,
 } from "lucide-react";
 
 const Features: React.FC = () => {
     const [currentFeature, setCurrentFeature] = useState(0);
-    const [scrollY, setScrollY] = useState(0);
     const sectionRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -32,8 +26,6 @@ const Features: React.FC = () => {
                 0,
                 -rect.top / (rect.height - window.innerHeight),
             );
-
-            setScrollY(progress);
 
             // Change feature based on scroll
             const featureIndex = Math.floor(progress * features.length);
@@ -251,40 +243,22 @@ const Features: React.FC = () => {
                                                 }`}
                                             >
                                                 {index === 0 && (
-                                                    <BarChart3
-                                                        className="w-5 h-5 text-gray-600"
-                                                        as="svg"
-                                                    />
+                                                    <BarChart3 className="w-5 h-5 text-gray-600" />
                                                 )}
                                                 {index === 1 && (
-                                                    <Globe
-                                                        className="w-5 h-5 text-gray-600"
-                                                        as="svg"
-                                                    />
+                                                    <Globe className="w-5 h-5 text-gray-600" />
                                                 )}
                                                 {index === 2 && (
-                                                    <Search
-                                                        className="w-5 h-5 text-gray-600"
-                                                        as="svg"
-                                                    />
+                                                    <Search className="w-5 h-5 text-gray-600" />
                                                 )}
                                                 {index === 3 && (
-                                                    <Shield
-                                                        className="w-5 h-5 text-gray-600"
-                                                        as="svg"
-                                                    />
+                                                    <Shield className="w-5 h-5 text-gray-600" />
                                                 )}
                                                 {index === 4 && (
-                                                    <Bookmark
-                                                        className="w-5 h-5 text-gray-600"
-                                                        as="svg"
-                                                    />
+                                                    <Bookmark className="w-5 h-5 text-gray-600" />
                                                 )}
                                                 {index === 5 && (
-                                                    <MessageCircle
-                                                        className="w-5 h-5 text-gray-600"
-                                                        as="svg"
-                                                    />
+                                                    <MessageCircle className="w-5 h-5 text-gray-600" />
                                                 )}
                                             </div>
                                             <div className="flex-1 min-w-0">

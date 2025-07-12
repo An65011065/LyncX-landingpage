@@ -114,8 +114,8 @@ const StoriesDemo = () => {
 // Simple BlockerDemo component
 const BlockerDemo = () => {
     const [isLocked, setIsLocked] = useState(false);
-    const [domain, setDomain] = useState("instagram.com");
-    const [timeRemaining, setTimeRemaining] = useState("2h 30m");
+    const [domain] = useState("instagram.com");
+    const [timeRemaining] = useState("2h 30m");
 
     return (
         <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-red-50 to-orange-50 rounded-lg">
@@ -617,12 +617,13 @@ export const ExtensionsSection: React.FC = () => {
                                                     ? "active"
                                                     : ""
                                             } ${isVisible ? "visible" : ""}`}
-                                            style={{
-                                                "--hue": `${getHue(index)}deg`,
-                                                filter: `hue-rotate(${getHue(
-                                                    index,
-                                                )}deg)`,
-                                            }}
+                                            style={
+                                                {
+                                                    filter: `hue-rotate(${getHue(
+                                                        index,
+                                                    )}deg)`,
+                                                } as React.CSSProperties
+                                            }
                                         />
                                     ))}
                                 </div>

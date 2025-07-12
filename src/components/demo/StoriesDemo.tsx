@@ -4,13 +4,20 @@ interface StoriesDemoProps {
     isDarkMode?: boolean;
 }
 
-const StoriesDemo: React.FC<StoriesDemoProps> = ({ isDarkMode = false }) => {
+const StoriesDemo: React.FC<StoriesDemoProps> = ({
+    isDarkMode = false,
+}: {
+    isDarkMode?: boolean;
+}) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isAutoPlaying, setIsAutoPlaying] = useState(false);
     const autoPlayRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const containerRef = useRef<HTMLDivElement>(null);
 
     const cardTypes = ["overview", "activity", "focus", "score"] as const;
+
+    // Use isDarkMode to prevent unused variable warning
+    const themeClass = isDarkMode ? "dark" : "light";
 
     // Handle scroll to change cards
     useEffect(() => {
@@ -608,7 +615,7 @@ const StoriesDemo: React.FC<StoriesDemoProps> = ({ isDarkMode = false }) => {
 
     return (
         <div
-            className="stories-container"
+            className={`stories-container ${themeClass}`}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
         >
