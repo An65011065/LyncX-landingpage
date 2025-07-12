@@ -7,7 +7,6 @@ import PrivacyPage from "./components/Privacy";
 import PricingPage from "./components/Pricing";
 import FAQSection from "./components/faq";
 import CTASection from "./components/cta";
-import Footer from "./components/Footer";
 
 const App: React.FC = () => {
     return (
@@ -20,7 +19,6 @@ const App: React.FC = () => {
             <PricingPage />
             <FAQSection />
             <CTASection />
-            <Footer />
         </div>
     );
 };
