@@ -1,4 +1,4 @@
-// src/pages/auth.tsx - Updated for Chrome Identity API
+// src/pages/auth.tsx - Fixed with JWT token generation
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { initializeApp } from "firebase/app";
@@ -58,7 +58,7 @@ export default function AuthPage() {
                 console.log("✅ User signed in:", user.email);
 
                 if (isFromExtension) {
-                    // Extension auth - redirect to Chrome's special URL
+                    // Extension auth - generate JWT and redirect
                     notifyExtensionSuccess(user, redirect_uri!);
                 } else {
                     // Regular web auth - redirect to dashboard or home
@@ -71,31 +71,66 @@ export default function AuthPage() {
     }, [location, authComplete]);
 
     const notifyExtensionSuccess = async (user: any, redirectUri: string) => {
-        console.log(
-            "✅ Extension auth successful, redirecting to:",
-            redirectUri,
-        );
+        console.log("✅ Extension auth successful, generating JWT token...");
         setAuthComplete(true);
 
         try {
-            // Build the redirect URL with user data as parameters
+            // STEP 1: Call your backend to generate JWT token
+            console.log("🔄 Calling backend to generate JWT token...");
+
+            const response = await fetch(
+                "https://lyncx-server.vercel.app/api/auth/generate-token",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        uid: user.uid,
+                        email: user.email,
+                        displayName: user.displayName,
+                        photoURL: user.photoURL,
+                    }),
+                },
+            );
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(
+                    errorData.error ||
+                        `Token generation failed: ${response.status}`,
+                );
+            }
+
+            const { token } = await response.json();
+
+            if (!token) {
+                throw new Error("No token received from server");
+            }
+
+            console.log("✅ JWT token generated successfully");
+
+            // STEP 2: Build redirect URL with user data AND JWT token
             const successUrl = new URL(redirectUri);
             successUrl.searchParams.set("uid", user.uid);
             successUrl.searchParams.set("email", user.email || "");
             successUrl.searchParams.set("displayName", user.displayName || "");
             successUrl.searchParams.set("photoURL", user.photoURL || "");
+            successUrl.searchParams.set("token", token); // 🔑 JWT TOKEN!
             successUrl.searchParams.set("timestamp", Date.now().toString());
 
-            console.log(
-                "🔄 Redirecting to Chrome Identity URL:",
-                successUrl.toString(),
-            );
+            console.log("🔄 Redirecting to extension with JWT token");
 
-            // Redirect to Chrome's special URL - Chrome will intercept this
+            // STEP 3: Redirect to Chrome's special URL - Chrome will intercept this
             window.location.href = successUrl.toString();
         } catch (error) {
-            console.error("❌ Error during extension auth redirect:", error);
-            setError("Authentication redirect failed");
+            console.error("❌ Error during JWT token generation:", error);
+            setError(
+                `Authentication failed: ${
+                    error instanceof Error ? error.message : "Unknown error"
+                }`,
+            );
+            setAuthComplete(false); // Allow retry
         }
     };
 
@@ -139,7 +174,7 @@ export default function AuthPage() {
                         Authentication Successful!
                     </h1>
                     <p className="text-gray-600 mb-4">
-                        Redirecting back to extension...
+                        Generating secure token and redirecting...
                     </p>
                     <div className="text-sm text-gray-500">
                         <div className="w-5 h-5 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin mx-auto"></div>
