@@ -33,6 +33,7 @@ const App: React.FC = () => {
                 <Routes>
                     <Route path="/" element={<LandingPage />} />
                     <Route path="/auth" element={<AuthPage />} />
+                    {/* Add more routes as needed */}
                 </Routes>
             </div>
         </BrowserRouter>
