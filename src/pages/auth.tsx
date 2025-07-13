@@ -1,6 +1,4 @@
-// pages/auth.tsx or app/auth/page.tsx (depending on your Next.js version)
 import { useEffect, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
 import { initializeApp } from "firebase/app";
 import {
     getAuth,
@@ -8,11 +6,6 @@ import {
     GoogleAuthProvider,
     onAuthStateChanged,
 } from "firebase/auth";
-
-// Import your existing components
-import { Header } from "../components//Header";
-import PricingSection from "../components/Pricing";
-import Footer from "../components/Footer";
 
 const firebaseConfig = {
     apiKey: "AIzaSyAlQbwqFDB0XMZv8du485VBsqVxU3S-vpY",
@@ -32,13 +25,13 @@ export default function AuthPage() {
     const [error, setError] = useState<string | null>(null);
     const [isExtensionAuth, setIsExtensionAuth] = useState(false);
 
-    const searchParams = useLocation();
-    const router = useNavigate();
-
     useEffect(() => {
-        // Check if this is from extension
-        const params = new URLSearchParams(searchParams.search);
-        const source = params.get("source");
+        // Wait for window to be available (client-side only)
+        if (typeof window === "undefined") return;
+
+        // Check URL params without any router
+        const urlParams = new URLSearchParams(window.location.search);
+        const source = urlParams.get("source");
         const isFromExtension = source === "extension";
         setIsExtensionAuth(isFromExtension);
 
@@ -49,14 +42,14 @@ export default function AuthPage() {
                     // Extension auth - signal success and close
                     notifyExtensionSuccess();
                 } else {
-                    // Regular web auth - redirect to dashboard
-                    router("/dashboard");
+                    // Regular web auth - redirect to home or dashboard
+                    window.location.href = "/";
                 }
             }
         });
 
         return () => unsubscribe();
-    }, [searchParams, router]);
+    }, []);
 
     const notifyExtensionSuccess = () => {
         console.log("✅ Extension auth successful");
@@ -111,7 +104,6 @@ export default function AuthPage() {
         return (
             <div className="min-h-screen bg-gradient-to-br from-blue-600 to-purple-700 flex items-center justify-center">
                 <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl">
-                    {/* Extension indicator */}
                     <div className="text-center mb-2">
                         <span className="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
                             🔗 Extension Auth
@@ -177,10 +169,15 @@ export default function AuthPage() {
         );
     }
 
-    // Regular web auth UI - with all your components
+    // Regular web auth UI
     return (
         <div className="min-h-screen bg-white">
-            <Header />
+            {/* Simple header */}
+            <header className="py-6 border-b">
+                <div className="container mx-auto px-4">
+                    <h1 className="text-2xl font-bold text-gray-900">LyncX</h1>
+                </div>
+            </header>
 
             <main className="container mx-auto px-4 py-16">
                 <div className="max-w-4xl mx-auto text-center">
@@ -192,28 +189,48 @@ export default function AuthPage() {
                         wellness
                     </p>
 
-                    {/* Reuse your existing pricing component */}
-                    <PricingSection />
+                    {/* Simple pricing card */}
+                    <div className="bg-gray-50 border border-gray-200 rounded-2xl p-8 mb-8 max-w-md mx-auto">
+                        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                            Free Trial
+                        </h2>
+                        <p className="text-gray-600 mb-4">
+                            Start tracking your digital wellness today
+                        </p>
+                        <div className="text-3xl font-bold text-gray-900 mb-2">
+                            Free
+                        </div>
+                        <p className="text-sm text-gray-500">
+                            No credit card required
+                        </p>
+                    </div>
 
                     <div className="mt-12">
                         <button
                             onClick={handleSignIn}
                             disabled={loading}
-                            className="bg-blue-600 text-white py-4 px-8 rounded-xl text-lg font-semibold hover:bg-blue-700 disabled:opacity-50"
+                            className="bg-blue-600 text-white py-4 px-8 rounded-xl text-lg font-semibold hover:bg-blue-700 disabled:opacity-50 transition-colors"
                         >
                             {loading ? "Signing in..." : "Start Free Trial"}
                         </button>
                     </div>
 
                     {error && (
-                        <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+                        <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 max-w-md mx-auto">
                             {error}
                         </div>
                     )}
                 </div>
             </main>
 
-            <Footer />
+            {/* Simple footer */}
+            <footer className="py-8 border-t bg-gray-50">
+                <div className="container mx-auto px-4 text-center">
+                    <p className="text-gray-600">
+                        © 2024 LyncX. All rights reserved.
+                    </p>
+                </div>
+            </footer>
         </div>
     );
 }

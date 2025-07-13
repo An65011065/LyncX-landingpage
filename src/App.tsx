@@ -1,4 +1,5 @@
 import React from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Header } from "./components/Header";
 import { Hero } from "./components/Hero";
 import Features from "./components/Features";
@@ -7,10 +8,12 @@ import PrivacyPage from "./components/Privacy";
 import PricingPage from "./components/Pricing";
 import FAQSection from "./components/faq";
 import CTASection from "./components/cta";
+import AuthPage from "./pages/auth";
 
-const App: React.FC = () => {
+// Landing page component
+const LandingPage: React.FC = () => {
     return (
-        <div className="min-h-screen bg-[var(--bg)]">
+        <>
             <Header />
             <Hero />
             <ProblemAgitationSection />
@@ -19,7 +22,21 @@ const App: React.FC = () => {
             <PricingPage />
             <FAQSection />
             <CTASection />
-        </div>
+        </>
+    );
+};
+
+const App: React.FC = () => {
+    return (
+        <BrowserRouter>
+            <div className="min-h-screen bg-[var(--bg)]">
+                <Routes>
+                    <Route path="/" element={<LandingPage />} />
+                    <Route path="/auth" element={<AuthPage />} />
+                    {/* Add more routes as needed */}
+                </Routes>
+            </div>
+        </BrowserRouter>
     );
 };
 
