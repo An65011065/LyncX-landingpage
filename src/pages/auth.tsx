@@ -1,4 +1,4 @@
-// src/pages/auth.tsx - Updated with extension communication
+// src/pages/auth.tsx - Updated for Chrome Identity API
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { initializeApp } from "firebase/app";
@@ -27,15 +27,32 @@ export default function AuthPage() {
     const [error, setError] = useState<string | null>(null);
     const [isExtensionAuth, setIsExtensionAuth] = useState(false);
     const [authComplete, setAuthComplete] = useState(false);
+    const [redirectUri, setRedirectUri] = useState<string | null>(null);
 
     const location = useLocation();
 
     useEffect(() => {
-        // Check URL params for Vite/React Router
+        // Check URL params for extension auth
         const urlParams = new URLSearchParams(location.search);
         const source = urlParams.get("source");
+        const redirect_uri = urlParams.get("redirect_uri");
+
         const isFromExtension = source === "extension";
         setIsExtensionAuth(isFromExtension);
+        setRedirectUri(redirect_uri);
+
+        console.log("🔍 Auth page params:", {
+            source,
+            redirect_uri,
+            isFromExtension,
+        });
+
+        // Validate extension auth requirements
+        if (isFromExtension && !redirect_uri) {
+            console.error("❌ Extension auth missing redirect_uri parameter");
+            setError("Invalid extension authentication request");
+            return;
+        }
 
         // Listen for auth state changes
         const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -43,8 +60,8 @@ export default function AuthPage() {
                 console.log("✅ User signed in:", user.email);
 
                 if (isFromExtension) {
-                    // Extension auth - communicate with extension
-                    notifyExtensionSuccess(user);
+                    // Extension auth - redirect to Chrome's special URL
+                    notifyExtensionSuccess(user, redirect_uri!);
                 } else {
                     // Regular web auth - redirect to dashboard or home
                     window.location.href = "/";
@@ -55,44 +72,32 @@ export default function AuthPage() {
         return () => unsubscribe();
     }, [location, authComplete]);
 
-    const notifyExtensionSuccess = async (user: any) => {
-        console.log("✅ Extension auth successful");
+    const notifyExtensionSuccess = async (user: any, redirectUri: string) => {
+        console.log(
+            "✅ Extension auth successful, redirecting to:",
+            redirectUri,
+        );
         setAuthComplete(true);
 
         try {
-            // Method 1: Use localStorage as bridge (works across same domain)
-            const authData = {
-                uid: user.uid,
-                email: user.email,
-                displayName: user.displayName,
-                photoURL: user.photoURL,
-                timestamp: Date.now(),
-            };
-
-            localStorage.setItem("lyncx_auth_data", JSON.stringify(authData));
-
-            // Method 2: Change URL (what extension watches for)
-            const successUrl = new URL(window.location.href);
-            successUrl.pathname = "/auth-success";
-            successUrl.searchParams.set("success", "true");
+            // Build the redirect URL with user data as parameters
+            const successUrl = new URL(redirectUri);
             successUrl.searchParams.set("uid", user.uid);
             successUrl.searchParams.set("email", user.email || "");
             successUrl.searchParams.set("displayName", user.displayName || "");
             successUrl.searchParams.set("photoURL", user.photoURL || "");
             successUrl.searchParams.set("timestamp", Date.now().toString());
 
-            // Update URL without redirect
-            window.history.replaceState({}, "", successUrl.toString());
+            console.log(
+                "🔄 Redirecting to Chrome Identity URL:",
+                successUrl.toString(),
+            );
 
-            // Show success message
-            setAuthComplete(true);
-
-            // Close tab after delay
-            setTimeout(() => {
-                window.close();
-            }, 2000);
+            // Redirect to Chrome's special URL - Chrome will intercept this
+            window.location.href = successUrl.toString();
         } catch (error) {
-            console.error("Error notifying extension:", error);
+            console.error("❌ Error during extension auth redirect:", error);
+            setError("Authentication redirect failed");
         }
     };
 
@@ -126,8 +131,8 @@ export default function AuthPage() {
         }
     };
 
-    // Show success screen after auth
-    if (authComplete) {
+    // Show success screen after auth (this will be brief before redirect)
+    if (authComplete && isExtensionAuth) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-green-600 to-blue-700 flex items-center justify-center">
                 <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl text-center">
@@ -136,17 +141,17 @@ export default function AuthPage() {
                         Authentication Successful!
                     </h1>
                     <p className="text-gray-600 mb-4">
-                        You can now close this tab and return to the extension.
+                        Redirecting back to extension...
                     </p>
                     <div className="text-sm text-gray-500">
-                        This tab will close automatically in 2 seconds...
+                        <div className="w-5 h-5 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin mx-auto"></div>
                     </div>
                 </div>
             </div>
         );
     }
 
-    // Extension auth UI - minimal and focused
+    // Extension auth UI
     if (isExtensionAuth) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-blue-600 to-purple-700 flex items-center justify-center">
@@ -216,65 +221,25 @@ export default function AuthPage() {
         );
     }
 
-    // Regular web auth UI (same as before)
+    // Show error if someone visits /auth without proper extension parameters
     return (
-        <div className="min-h-screen bg-white">
-            <header className="py-6 border-b">
-                <div className="container mx-auto px-4">
-                    <h1 className="text-2xl font-bold text-gray-900">LyncX</h1>
-                </div>
-            </header>
-
-            <main className="container mx-auto px-4 py-16">
-                <div className="max-w-4xl mx-auto text-center">
-                    <h1 className="text-5xl font-bold text-gray-900 mb-6">
-                        Get Started with LyncX
-                    </h1>
-                    <p className="text-xl text-gray-600 mb-12">
-                        Choose your plan and start tracking your digital
-                        wellness
-                    </p>
-
-                    <div className="bg-gray-50 border border-gray-200 rounded-2xl p-8 mb-8 max-w-md mx-auto">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                            Free Trial
-                        </h2>
-                        <p className="text-gray-600 mb-4">
-                            Start tracking your digital wellness today
-                        </p>
-                        <div className="text-3xl font-bold text-gray-900 mb-2">
-                            Free
-                        </div>
-                        <p className="text-sm text-gray-500">
-                            No credit card required
-                        </p>
-                    </div>
-
-                    <div className="mt-12">
-                        <button
-                            onClick={handleSignIn}
-                            disabled={loading}
-                            className="bg-blue-600 text-white py-4 px-8 rounded-xl text-lg font-semibold hover:bg-blue-700 disabled:opacity-50 transition-colors"
-                        >
-                            {loading ? "Signing in..." : "Start Free Trial"}
-                        </button>
-                    </div>
-
-                    {error && (
-                        <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 max-w-md mx-auto">
-                            {error}
-                        </div>
-                    )}
-                </div>
-            </main>
-
-            <footer className="py-8 border-t bg-gray-50">
-                <div className="container mx-auto px-4 text-center">
-                    <p className="text-gray-600">
-                        © 2024 LyncX. All rights reserved.
-                    </p>
-                </div>
-            </footer>
+        <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+            <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-xl text-center">
+                <div className="text-4xl mb-4">🔒</div>
+                <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                    Authentication Required
+                </h1>
+                <p className="text-gray-600 mb-6">
+                    This page is for extension authentication only. Please use
+                    the LyncX extension to sign in.
+                </p>
+                <a
+                    href="/"
+                    className="inline-block bg-blue-600 text-white py-2 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+                >
+                    Go to Homepage
+                </a>
+            </div>
         </div>
     );
 }
