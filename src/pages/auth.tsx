@@ -1,4 +1,6 @@
+// src/pages/Auth.tsx (or wherever you put components)
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom"; // This should exist in your Vite project
 import { initializeApp } from "firebase/app";
 import {
     getAuth,
@@ -25,12 +27,11 @@ export default function AuthPage() {
     const [error, setError] = useState<string | null>(null);
     const [isExtensionAuth, setIsExtensionAuth] = useState(false);
 
-    useEffect(() => {
-        // Wait for window to be available (client-side only)
-        if (typeof window === "undefined") return;
+    const location = useLocation();
 
-        // Check URL params without any router
-        const urlParams = new URLSearchParams(window.location.search);
+    useEffect(() => {
+        // Check URL params for Vite/React Router
+        const urlParams = new URLSearchParams(location.search);
         const source = urlParams.get("source");
         const isFromExtension = source === "extension";
         setIsExtensionAuth(isFromExtension);
@@ -42,14 +43,14 @@ export default function AuthPage() {
                     // Extension auth - signal success and close
                     notifyExtensionSuccess();
                 } else {
-                    // Regular web auth - redirect to home or dashboard
+                    // Regular web auth - redirect to dashboard or home
                     window.location.href = "/";
                 }
             }
         });
 
         return () => unsubscribe();
-    }, []);
+    }, [location]);
 
     const notifyExtensionSuccess = () => {
         console.log("✅ Extension auth successful");
@@ -172,7 +173,7 @@ export default function AuthPage() {
     // Regular web auth UI
     return (
         <div className="min-h-screen bg-white">
-            {/* Simple header */}
+            {/* Your existing header component or simple header */}
             <header className="py-6 border-b">
                 <div className="container mx-auto px-4">
                     <h1 className="text-2xl font-bold text-gray-900">LyncX</h1>
@@ -189,7 +190,7 @@ export default function AuthPage() {
                         wellness
                     </p>
 
-                    {/* Simple pricing card */}
+                    {/* You can replace this with your actual PricingSection component */}
                     <div className="bg-gray-50 border border-gray-200 rounded-2xl p-8 mb-8 max-w-md mx-auto">
                         <h2 className="text-2xl font-bold text-gray-900 mb-2">
                             Free Trial
@@ -223,7 +224,7 @@ export default function AuthPage() {
                 </div>
             </main>
 
-            {/* Simple footer */}
+            {/* Your existing footer component or simple footer */}
             <footer className="py-8 border-t bg-gray-50">
                 <div className="container mx-auto px-4 text-center">
                     <p className="text-gray-600">
