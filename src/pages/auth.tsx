@@ -1,6 +1,6 @@
-// src/pages/Auth.tsx (or wherever you put components)
+// src/pages/auth.tsx - Updated with extension communication
 import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom"; // This should exist in your Vite project
+import { useLocation } from "react-router-dom";
 import { initializeApp } from "firebase/app";
 import {
     getAuth,
@@ -26,6 +26,7 @@ export default function AuthPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isExtensionAuth, setIsExtensionAuth] = useState(false);
+    const [authComplete, setAuthComplete] = useState(false);
 
     const location = useLocation();
 
@@ -38,10 +39,12 @@ export default function AuthPage() {
 
         // Listen for auth state changes
         const unsubscribe = onAuthStateChanged(auth, (user) => {
-            if (user) {
+            if (user && !authComplete) {
+                console.log("✅ User signed in:", user.email);
+
                 if (isFromExtension) {
-                    // Extension auth - signal success and close
-                    notifyExtensionSuccess();
+                    // Extension auth - communicate with extension
+                    notifyExtensionSuccess(user);
                 } else {
                     // Regular web auth - redirect to dashboard or home
                     window.location.href = "/";
@@ -50,24 +53,47 @@ export default function AuthPage() {
         });
 
         return () => unsubscribe();
-    }, [location]);
+    }, [location, authComplete]);
 
-    const notifyExtensionSuccess = () => {
+    const notifyExtensionSuccess = async (user: any) => {
         console.log("✅ Extension auth successful");
+        setAuthComplete(true);
 
-        // Method 1: Change URL (what extension watches for)
-        const successUrl = new URL(window.location.href);
-        successUrl.pathname = "/auth-success";
-        successUrl.searchParams.set("success", "true");
-        successUrl.searchParams.set("timestamp", Date.now().toString());
+        try {
+            // Method 1: Use localStorage as bridge (works across same domain)
+            const authData = {
+                uid: user.uid,
+                email: user.email,
+                displayName: user.displayName,
+                photoURL: user.photoURL,
+                timestamp: Date.now(),
+            };
 
-        // Update URL without redirect
-        window.history.replaceState({}, "", successUrl.toString());
+            localStorage.setItem("lyncx_auth_data", JSON.stringify(authData));
 
-        // Method 2: Try redirect after delay
-        setTimeout(() => {
-            window.location.href = successUrl.toString();
-        }, 1500);
+            // Method 2: Change URL (what extension watches for)
+            const successUrl = new URL(window.location.href);
+            successUrl.pathname = "/auth-success";
+            successUrl.searchParams.set("success", "true");
+            successUrl.searchParams.set("uid", user.uid);
+            successUrl.searchParams.set("email", user.email || "");
+            successUrl.searchParams.set("displayName", user.displayName || "");
+            successUrl.searchParams.set("photoURL", user.photoURL || "");
+            successUrl.searchParams.set("timestamp", Date.now().toString());
+
+            // Update URL without redirect
+            window.history.replaceState({}, "", successUrl.toString());
+
+            // Show success message
+            setAuthComplete(true);
+
+            // Close tab after delay
+            setTimeout(() => {
+                window.close();
+            }, 2000);
+        } catch (error) {
+            console.error("Error notifying extension:", error);
+        }
     };
 
     const handleSignIn = async () => {
@@ -99,6 +125,26 @@ export default function AuthPage() {
             setLoading(false);
         }
     };
+
+    // Show success screen after auth
+    if (authComplete) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-green-600 to-blue-700 flex items-center justify-center">
+                <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl text-center">
+                    <div className="text-6xl mb-4">✅</div>
+                    <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                        Authentication Successful!
+                    </h1>
+                    <p className="text-gray-600 mb-4">
+                        You can now close this tab and return to the extension.
+                    </p>
+                    <div className="text-sm text-gray-500">
+                        This tab will close automatically in 2 seconds...
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     // Extension auth UI - minimal and focused
     if (isExtensionAuth) {
@@ -170,10 +216,9 @@ export default function AuthPage() {
         );
     }
 
-    // Regular web auth UI
+    // Regular web auth UI (same as before)
     return (
         <div className="min-h-screen bg-white">
-            {/* Your existing header component or simple header */}
             <header className="py-6 border-b">
                 <div className="container mx-auto px-4">
                     <h1 className="text-2xl font-bold text-gray-900">LyncX</h1>
@@ -190,7 +235,6 @@ export default function AuthPage() {
                         wellness
                     </p>
 
-                    {/* You can replace this with your actual PricingSection component */}
                     <div className="bg-gray-50 border border-gray-200 rounded-2xl p-8 mb-8 max-w-md mx-auto">
                         <h2 className="text-2xl font-bold text-gray-900 mb-2">
                             Free Trial
@@ -224,7 +268,6 @@ export default function AuthPage() {
                 </div>
             </main>
 
-            {/* Your existing footer component or simple footer */}
             <footer className="py-8 border-t bg-gray-50">
                 <div className="container mx-auto px-4 text-center">
                     <p className="text-gray-600">
