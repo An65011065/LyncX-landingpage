@@ -1,7 +1,6 @@
-"use client";
-
+// src/pages/auth.tsx - Complete with debug alerts
 import { useEffect, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { initializeApp } from "firebase/app";
 import {
     getAuth,
@@ -9,11 +8,6 @@ import {
     GoogleAuthProvider,
     onAuthStateChanged,
 } from "firebase/auth";
-
-// Import your existing components
-import { Header } from "../components/Header";
-import PricingSection from "../components/Pricing";
-import Footer from "../components/Footer";
 
 const firebaseConfig = {
     apiKey: "AIzaSyAlQbwqFDB0XMZv8du485VBsqVxU3S-vpY",
@@ -32,48 +26,121 @@ export default function AuthPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isExtensionAuth, setIsExtensionAuth] = useState(false);
+    const [authComplete, setAuthComplete] = useState(false);
 
-    const searchParams = useLocation();
-    const router = useNavigate();
+    const location = useLocation();
 
     useEffect(() => {
-        // Check if this is from extension
-        const source = searchParams.search.split("source=")[1];
+        // Check URL params for extension auth
+        const urlParams = new URLSearchParams(location.search);
+        const source = urlParams.get("source");
+        const redirect_uri = urlParams.get("redirect_uri");
+
         const isFromExtension = source === "extension";
         setIsExtensionAuth(isFromExtension);
 
+        console.log("🔍 Auth page params:", {
+            source,
+            redirect_uri,
+            isFromExtension,
+        });
+
+        // Validate extension auth requirements
+        if (isFromExtension && !redirect_uri) {
+            console.error("❌ Extension auth missing redirect_uri parameter");
+            setError("Invalid extension authentication request");
+            return;
+        }
+
         // Listen for auth state changes
         const unsubscribe = onAuthStateChanged(auth, (user) => {
-            if (user) {
+            if (user && !authComplete) {
+                console.log("✅ User signed in:", user.email);
+
                 if (isFromExtension) {
-                    // Extension auth - signal success and close
-                    notifyExtensionSuccess();
+                    // Extension auth - generate JWT and redirect
+                    notifyExtensionSuccess(user, redirect_uri!);
                 } else {
-                    // Regular web auth - redirect to dashboard
-                    router("/dashboard");
+                    // Regular web auth - redirect to dashboard or home
+                    window.location.href = "/";
                 }
             }
         });
 
         return () => unsubscribe();
-    }, [searchParams, router]);
+    }, [location, authComplete]);
 
-    const notifyExtensionSuccess = () => {
-        console.log("✅ Extension auth successful");
+    const notifyExtensionSuccess = async (user: any, redirectUri: string) => {
+        alert("🚨 notifyExtensionSuccess called!"); // DEBUG ALERT
 
-        // Method 1: Change URL (what extension watches for)
-        const successUrl = new URL(window.location.href);
-        successUrl.pathname = "/auth-success";
-        successUrl.searchParams.set("success", "true");
-        successUrl.searchParams.set("timestamp", Date.now().toString());
+        console.log("✅ Extension auth successful, generating JWT token...");
+        setAuthComplete(true);
 
-        // Update URL without redirect
-        window.history.replaceState({}, "", successUrl.toString());
+        try {
+            // STEP 1: Call your backend to generate JWT token
+            console.log("🔄 Calling backend to generate JWT token...");
 
-        // Method 2: Try redirect after delay
-        setTimeout(() => {
+            const response = await fetch(
+                "https://lyncx-server.vercel.app/api/auth/generate-token",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        uid: user.uid,
+                        email: user.email,
+                        displayName: user.displayName,
+                        photoURL: user.photoURL,
+                    }),
+                },
+            );
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                alert(`❌ Backend failed: ${response.status}`); // DEBUG ALERT
+                throw new Error(
+                    errorData.error ||
+                        `Token generation failed: ${response.status}`,
+                );
+            }
+
+            const { token } = await response.json();
+
+            if (!token) {
+                alert("❌ No token received from server!"); // DEBUG ALERT
+                throw new Error("No token received from server");
+            }
+
+            alert("✅ JWT token received, redirecting..."); // DEBUG ALERT
+
+            // STEP 2: Build redirect URL with user data AND JWT token
+            const successUrl = new URL(redirectUri);
+            successUrl.searchParams.set("uid", user.uid);
+            successUrl.searchParams.set("email", user.email || "");
+            successUrl.searchParams.set("displayName", user.displayName || "");
+            successUrl.searchParams.set("photoURL", user.photoURL || "");
+            successUrl.searchParams.set("token", token); // 🔑 JWT TOKEN!
+            successUrl.searchParams.set("timestamp", Date.now().toString());
+
+            console.log("🔄 Redirecting to extension with JWT token");
+
+            // STEP 3: Redirect to Chrome's special URL - Chrome will intercept this
             window.location.href = successUrl.toString();
-        }, 1500);
+        } catch (error) {
+            alert(
+                `❌ Error: ${
+                    error instanceof Error ? error.message : "Unknown error"
+                }`,
+            ); // DEBUG ALERT
+            console.error("❌ Error during JWT token generation:", error);
+            setError(
+                `Authentication failed: ${
+                    error instanceof Error ? error.message : "Unknown error"
+                }`,
+            );
+            setAuthComplete(false); // Allow retry
+        }
     };
 
     const handleSignIn = async () => {
@@ -106,12 +173,31 @@ export default function AuthPage() {
         }
     };
 
-    // Extension auth UI - minimal and focused
+    // Show success screen after auth (this will be brief before redirect)
+    if (authComplete && isExtensionAuth) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-green-600 to-blue-700 flex items-center justify-center">
+                <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl text-center">
+                    <div className="text-6xl mb-4">✅</div>
+                    <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                        Authentication Successful!
+                    </h1>
+                    <p className="text-gray-600 mb-4">
+                        Generating secure token and redirecting...
+                    </p>
+                    <div className="text-sm text-gray-500">
+                        <div className="w-5 h-5 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin mx-auto"></div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // Extension auth UI
     if (isExtensionAuth) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-blue-600 to-purple-700 flex items-center justify-center">
                 <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl">
-                    {/* Extension indicator */}
                     <div className="text-center mb-2">
                         <span className="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
                             🔗 Extension Auth
@@ -177,43 +263,25 @@ export default function AuthPage() {
         );
     }
 
-    // Regular web auth UI - with all your components
+    // Show error if someone visits /auth without proper extension parameters
     return (
-        <div className="min-h-screen bg-white">
-            <Header />
-
-            <main className="container mx-auto px-4 py-16">
-                <div className="max-w-4xl mx-auto text-center">
-                    <h1 className="text-5xl font-bold text-gray-900 mb-6">
-                        Get Started with LyncX
-                    </h1>
-                    <p className="text-xl text-gray-600 mb-12">
-                        Choose your plan and start tracking your digital
-                        wellness
-                    </p>
-
-                    {/* Reuse your existing pricing component */}
-                    <PricingSection />
-
-                    <div className="mt-12">
-                        <button
-                            onClick={handleSignIn}
-                            disabled={loading}
-                            className="bg-blue-600 text-white py-4 px-8 rounded-xl text-lg font-semibold hover:bg-blue-700 disabled:opacity-50"
-                        >
-                            {loading ? "Signing in..." : "Start Free Trial"}
-                        </button>
-                    </div>
-
-                    {error && (
-                        <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-                            {error}
-                        </div>
-                    )}
-                </div>
-            </main>
-
-            <Footer />
+        <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+            <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-xl text-center">
+                <div className="text-4xl mb-4">🔒</div>
+                <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                    Authentication Required
+                </h1>
+                <p className="text-gray-600 mb-6">
+                    This page is for extension authentication only. Please use
+                    the LyncX extension to sign in.
+                </p>
+                <a
+                    href="/"
+                    className="inline-block bg-blue-600 text-white py-2 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+                >
+                    Go to Homepage
+                </a>
+            </div>
         </div>
     );
 }

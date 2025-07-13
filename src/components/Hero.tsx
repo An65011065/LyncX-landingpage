@@ -1,17 +1,23 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
 import DashboardTab from "./demo/DashboardDemo";
 
 export const Hero: React.FC = () => {
-    const navigate = useNavigate();
-
     const getViewportStyle = () => {
-        return {
-            background: "rgba(255, 255, 255, 0.7)",
-            backdropFilter: "blur(20px)",
-            WebkitBackdropFilter: "blur(20px)",
-            border: "1px solid rgba(255, 255, 255, 0.2)",
+        const baseStyle = {
+            border: "1px solid rgba(255, 255, 255, 0.18)",
+            borderRadius: "16px",
+            overflowY: "hidden" as const,
+            overflowX: "hidden" as const,
+            transition: "all 0.8s cubic-bezier(0.4, 0, 0.2, 1)",
+            position: "relative" as const,
+            zIndex: 10,
+            // Glass effect properties
+            background: "rgba(255, 255, 255, 0.25)",
+            boxShadow: "0 8px 32px rgba(31, 38, 135, 0.37)",
+            backdropFilter: "blur(8px) saturate(100%)",
+            WebkitBackdropFilter: "blur(8px) saturate(100%)",
         };
+        return baseStyle;
     };
 
     return (
@@ -26,10 +32,7 @@ export const Hero: React.FC = () => {
                     - without changing how you use it.
                 </p>
                 <div className="pt-4">
-                    <button
-                        onClick={() => navigate("/auth")}
-                        className="bg-[var(--text)] text-white px-8 py-4 rounded-lg text-base font-medium hover:bg-opacity-80 transition-all hover:-translate-y-0.5"
-                    >
+                    <button className="bg-[var(--text)] text-white px-8 py-4 rounded-lg text-base font-medium hover:bg-opacity-80 transition-all hover:-translate-y-0.5">
                         Install Free
                     </button>
                 </div>
