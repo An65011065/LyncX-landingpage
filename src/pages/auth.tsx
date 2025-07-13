@@ -27,7 +27,6 @@ export default function AuthPage() {
     const [error, setError] = useState<string | null>(null);
     const [isExtensionAuth, setIsExtensionAuth] = useState(false);
     const [authComplete, setAuthComplete] = useState(false);
-    const [redirectUri, setRedirectUri] = useState<string | null>(null);
 
     const location = useLocation();
 
@@ -39,7 +38,6 @@ export default function AuthPage() {
 
         const isFromExtension = source === "extension";
         setIsExtensionAuth(isFromExtension);
-        setRedirectUri(redirect_uri);
 
         console.log("🔍 Auth page params:", {
             source,
