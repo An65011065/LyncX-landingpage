@@ -210,18 +210,6 @@ const Player: React.FC = () => {
         [token, tracks],
     );
 
-    const handlePlayPause = useCallback(() => {
-        if (!isLocked && isPowerOn) {
-            if (isPlaying) {
-                player?.pause();
-                SpotifyService.pausePlayback();
-            } else {
-                player?.resume();
-                SpotifyService.resumePlayback();
-            }
-            setIsPlaying(!isPlaying);
-        }
-    }, [isLocked, isPowerOn, isPlaying, player]);
 
     const handlePowerStateChange = useCallback(
         (newPowerState: boolean) => {
@@ -253,19 +241,6 @@ const Player: React.FC = () => {
         setIsLocked(newLockState);
     }, []);
 
-    const changeTrack = useCallback(
-        (direction: "next" | "previous") => {
-            const currentIndex = tracks.findIndex(
-                (track) => track.id === currentTrack,
-            );
-            const newIndex =
-                direction === "next"
-                    ? (currentIndex + 1) % tracks.length
-                    : (currentIndex - 1 + tracks.length) % tracks.length;
-            handleTrackSelect(tracks[newIndex].id);
-        },
-        [tracks, currentTrack, handleTrackSelect],
-    );
 
     // Theme toggle handler
     const handleThemeToggle = useCallback(() => {

@@ -1,69 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
-import {
-    Camera,
-    BarChart3,
-    FileText,
-    Timer,
-    Shield,
-    Calendar,
-    ArrowRight,
-    MessageSquare,
-    Search,
-    X
-} from "lucide-react";
 
 export const Hero: React.FC = () => {
     const navigate = useNavigate();
-    const [hoveredNavItem, setHoveredNavItem] = useState<string | null>(null);
-    const [showExploreModal, setShowExploreModal] = useState(false);
-    const [exploreInput, setExploreInput] = useState("");
-    const [isTyping, setIsTyping] = useState(false);
-    const [showTooltip, setShowTooltip] = useState<string | null>(null);
-
-    // Auto-typing demo for explore modal
-    useEffect(() => {
-        if (showExploreModal && !isTyping) {
-            const demoTexts = [
-                "/ask What is this page about?",
-                "/calc 15% tip on $47.50", 
-                "/remember This design pattern",
-                "How does this component work?"
-            ];
-            let currentIndex = 0;
-            
-            const typeText = (text: string) => {
-                setIsTyping(true);
-                setExploreInput("");
-                let i = 0;
-                const typing = setInterval(() => {
-                    if (i < text.length) {
-                        setExploreInput(text.slice(0, i + 1));
-                        i++;
-                    } else {
-                        clearInterval(typing);
-                        setTimeout(() => {
-                            setIsTyping(false);
-                            currentIndex = (currentIndex + 1) % demoTexts.length;
-                            setTimeout(() => typeText(demoTexts[currentIndex]), 2000);
-                        }, 1500);
-                    }
-                }, 100);
-            };
-            
-            typeText(demoTexts[currentIndex]);
-        }
-    }, [showExploreModal, isTyping]);
-
-    const navItems = [
-        { id: "screenshot", icon: Camera, label: "Screenshot" },
-        { id: "analytics", icon: BarChart3, label: "Analytics" },
-        { id: "flow", icon: Calendar, label: "Flow" },
-        { id: "explore", icon: MessageSquare, label: "Explore" },
-        { id: "notes", icon: FileText, label: "Notes" },
-        { id: "timer", icon: Timer, label: "Timer" },
-        { id: "limits", icon: Shield, label: "Limits" },
-    ];
 
     return (
         <section 

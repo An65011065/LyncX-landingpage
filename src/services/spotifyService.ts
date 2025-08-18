@@ -38,7 +38,6 @@ export interface AudioFeatures {
     "Time Signature": number;
 }
 
-const DEFAULT_PLAYLIST_ID = "0ztKLL6mwpHoiGuvpQ03v6"; // Spotify's "Global Top 50" playlist
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
