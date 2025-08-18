@@ -19,7 +19,7 @@ export const AdvancedPowerButton: React.FC<AdvancedPowerButtonProps> = ({
     isDarkMode = false,
     isAuthenticated = false,
 }) => {
-    const [isPressed, setIsPressed] = useState(false);
+    const [, setIsPressed] = useState(false);
     const [rotation, setRotation] = useState(0);
 
     const handlePowerClick = () => {

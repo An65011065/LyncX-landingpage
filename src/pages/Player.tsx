@@ -8,7 +8,7 @@ import * as SpotifyService from "../services/spotifyService";
 
 const Player: React.FC = () => {
     const [token, setToken] = useState<string | null>(null);
-    const [isLocked, setIsLocked] = useState(true);
+    const [, setIsLocked] = useState(true);
     const [isPlaying, setIsPlaying] = useState(false);
     const [isPowerOn, setIsPowerOn] = useState(false);
     const [tracks, setTracks] = useState<SpotifyService.Track[]>([]);
