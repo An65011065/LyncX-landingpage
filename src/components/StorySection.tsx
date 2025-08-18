@@ -1,5 +1,4 @@
 import React, { useEffect, useRef } from "react";
-import StoriesDemo from "./demo/StoriesDemo";
 
 interface StorySectionProps {
     id: string;
@@ -69,8 +68,11 @@ export const StorySection: React.FC<StorySectionProps> = ({
                 </div>
 
                 {/* Stories Demo Content */}
-                <div className="h-[500px] bg-white">
-                    <StoriesDemo isDarkMode={false} />
+                <div className="h-[500px] bg-white flex items-center justify-center">
+                    <div className="text-center text-gray-500">
+                        <div className="text-4xl mb-4">📊</div>
+                        <p className="text-lg">Stories Demo Coming Soon</p>
+                    </div>
                 </div>
             </div>
         </section>

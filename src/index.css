@@ -4,14 +4,20 @@
 
 @layer base {
     :root {
-        --accent-color: #3f51b5;
-        --bg: #fcfcf7;
-        --card-bg: #fefefe;
-        --border: #e2e2e2;
-        --text: #111;
-        --muted-text: #666;
+        --accent-color: #c68346;
+        --bg: #fffbf0;
+        --card-bg: #ffffff;
+        --border: #e5e5e5;
+        --text: #2d1810;
+        --muted-text: #8b4513;
         --light-gray: #f8f8f8;
         --productive: #28a745;
         --leisure: #ff6b6b;
+    }
+    
+    body {
+        font-family: "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+        background: var(--bg);
+        color: var(--text);
     }
 }
