@@ -187,27 +187,6 @@ const Player: React.FC = () => {
         player.addListener("ready", ({ device_id }) => {
             console.log("Ready with Device ID", device_id);
             SpotifyService.transferPlayback(device_id);
-            
-            // Immediately check for any existing playback state
-            setTimeout(async () => {
-                try {
-                    const state = await player.getCurrentState();
-                    if (state && state.track_window && state.track_window.current_track) {
-                        console.log("🎵 Found existing playback on player ready");
-                        const track = state.track_window.current_track;
-                        setIsPlaying(!state.paused);
-                        setCurrentTrack(track.id);
-                        setCurrentTrackInfo({
-                            id: track.id,
-                            name: track.name,
-                            artist: track.artists.map(a => a.name).join(", "),
-                            album: track.album.name
-                        });
-                    }
-                } catch (error) {
-                    console.log("🎵 No existing playback found on ready");
-                }
-            }, 1000); // Give a moment for any external API calls to take effect
         });
 
         player.addListener("not_ready", ({ device_id }) => {
@@ -216,14 +195,11 @@ const Player: React.FC = () => {
         });
 
         player.addListener("player_state_changed", (state) => {
-            console.log("🎵 Player state changed:", state);
+            console.log("🎵 Player state changed");
             if (state && state.track_window && state.track_window.current_track) {
                 const track = state.track_window.current_track;
-                console.log("🎵 Track info from state:", {
-                    name: track.name,
-                    artists: track.artists.map(a => a.name),
-                    album: track.album.name
-                });
+                console.log("🎵 Now playing:", track.name, "by", track.artists.map(a => a.name).join(", "));
+                
                 setIsPlaying(!state.paused);
                 setCurrentTrack(track.id);
                 setCurrentTrackInfo({
@@ -233,7 +209,7 @@ const Player: React.FC = () => {
                     album: track.album.name
                 });
             } else {
-                console.log("⚠️ Player state is null - playback may have stopped");
+                console.log("🎵 Playback stopped");
                 setIsPlaying(false);
                 setCurrentTrackInfo(null);
             }
@@ -266,9 +242,7 @@ const Player: React.FC = () => {
 
         player.connect().then((success) => {
             if (success) {
-                console.log(
-                    "The Web Playback SDK successfully connected to Spotify!",
-                );
+                console.log("✅ Web Playback SDK connected to Spotify");
                 setPlayer(player);
             }
         });
@@ -295,117 +269,86 @@ const Player: React.FC = () => {
         if (pendingTrackId && player && token) {
             console.log("🎵 Playing pending track from extension:", pendingTrackId);
             
-            // Try to play the track directly
             SpotifyService.playTrack(pendingTrackId)
                 .then(() => {
-                    setIsPlaying(true);
-                    setCurrentTrack(pendingTrackId);
-                    setPendingTrackId(null); // Clear pending track
-                    console.log("✅ Successfully played track from extension");
+                    console.log("✅ Track playback initiated");
+                    setPendingTrackId(null); // Clear pending track - state change event will handle UI update
                 })
                 .catch((error) => {
                     console.error("❌ Error playing pending track:", error);
-                    // Still set as current track for UI context
-                    setCurrentTrack(pendingTrackId);
                     setPendingTrackId(null);
                 });
         }
     }, [pendingTrackId, player, token]);
 
-    // Periodic state synchronization to ensure UI stays in sync with actual playback
-    useEffect(() => {
-        if (!player || !token) return;
-
-        const checkPlayerState = async () => {
-            try {
-                const state = await player.getCurrentState();
-                if (state && state.track_window && state.track_window.current_track) {
-                    const actuallyPlaying = !state.paused;
-                    if (actuallyPlaying !== isPlaying) {
-                        console.log(`🎵 Syncing player state: UI=${isPlaying}, Actual=${actuallyPlaying}`);
-                        setIsPlaying(actuallyPlaying);
-                    }
-                    const track = state.track_window.current_track;
-                    setCurrentTrack(track.id);
-                    setCurrentTrackInfo({
-                        id: track.id,
-                        name: track.name,
-                        artist: track.artists.map(a => a.name).join(", "),
-                        album: track.album.name
-                    });
-                } else {
-                    // No active session - ensure UI shows stopped
-                    if (isPlaying) {
-                        console.log("🎵 No active session detected, stopping UI playback indicator");
-                        setIsPlaying(false);
-                    }
-                }
-            } catch (error) {
-                console.error("🎵 Error checking player state:", error);
-                // On error, assume stopped
-                if (isPlaying) {
-                    setIsPlaying(false);
-                }
-            }
-        };
-
-        // Check state every 2 seconds (more frequent to catch external plays)
-        const stateChecker = setInterval(checkPlayerState, 2000);
+    // Simple function to update track info from player state
+    const updateTrackInfo = useCallback(async () => {
+        if (!player) return;
         
-        return () => clearInterval(stateChecker);
-    }, [player, token, isPlaying]);
+        try {
+            const state = await player.getCurrentState();
+            if (state && state.track_window && state.track_window.current_track) {
+                const track = state.track_window.current_track;
+                console.log("🎵 Updating track info:", track.name, "by", track.artists.map(a => a.name).join(", "));
+                
+                setIsPlaying(!state.paused);
+                setCurrentTrack(track.id);
+                setCurrentTrackInfo({
+                    id: track.id,
+                    name: track.name,
+                    artist: track.artists.map(a => a.name).join(", "),
+                    album: track.album.name
+                });
+            } else {
+                console.log("🎵 No active playback found");
+                setIsPlaying(false);
+                setCurrentTrackInfo(null);
+            }
+        } catch (error) {
+            console.error("🎵 Error getting player state:", error);
+        }
+    }, [player]);
 
-    // Check player state when window gains focus (user switches back to tab)
+    // Initial check for existing playback when player is ready
+    useEffect(() => {
+        if (player && token) {
+            // Brief delay to let player settle
+            const timer = setTimeout(() => updateTrackInfo(), 1000);
+            return () => clearTimeout(timer);
+        }
+    }, [player, token, updateTrackInfo]);
+
+    // Check player state when tab becomes visible (backup mechanism)
     useEffect(() => {
         if (!player || !token) return;
 
-        const handleFocus = async () => {
-            try {
-                console.log("🎵 Window focused, checking player state...");
-                const state = await player.getCurrentState();
-                if (state && state.track_window && state.track_window.current_track) {
-                    setIsPlaying(!state.paused);
-                    const track = state.track_window.current_track;
-                    setCurrentTrack(track.id);
-                    setCurrentTrackInfo({
-                        id: track.id,
-                        name: track.name,
-                        artist: track.artists.map(a => a.name).join(", "),
-                        album: track.album.name
-                    });
-                    console.log("🎵 State synced on focus:", !state.paused);
-                } else {
-                    setIsPlaying(false);
-                }
-            } catch (error) {
-                console.error("🎵 Error checking state on focus:", error);
-            }
-        };
-
-        // Check state on both focus and visibility change
         const handleVisibilityChange = () => {
             if (!document.hidden) {
-                handleFocus();
+                console.log("🎵 Tab became visible, checking for missed playback...");
+                updateTrackInfo();
             }
         };
 
-        window.addEventListener('focus', handleFocus);
         document.addEventListener('visibilitychange', handleVisibilityChange);
+        window.addEventListener('focus', updateTrackInfo);
         
         return () => {
-            window.removeEventListener('focus', handleFocus);
             document.removeEventListener('visibilitychange', handleVisibilityChange);
+            window.removeEventListener('focus', updateTrackInfo);
         };
-    }, [player, token]);
+    }, [player, token, updateTrackInfo]);
 
     const handleTrackSelect = useCallback(
         (trackId: string) => {
             if (!trackId || !tracks.some((track) => track.id === trackId))
                 return;
-            setCurrentTrack(trackId);
+                
             if (token) {
                 SpotifyService.playTrack(trackId)
-                    .then(() => setIsPlaying(true))
+                    .then(() => {
+                        console.log("✅ Track playback initiated from track list");
+                        // Let the player_state_changed event handle UI updates
+                    })
                     .catch((error) => {
                         console.error("Error playing track:", error);
                         setError("Failed to play track. Please try again.");
@@ -418,8 +361,11 @@ const Player: React.FC = () => {
 
     const handlePowerStateChange = useCallback(
         (newPowerState: boolean) => {
-            // If not authenticated, handle power on/off
+            console.log("🎵 Power button clicked. Auth state:", !!token, "Power state:", newPowerState, "Is playing:", isPlaying);
+            
+            // If not authenticated, handle power on/off for OAuth
             if (!token) {
+                console.log("🎵 No token, starting OAuth flow");
                 setIsPowerOn(newPowerState);
                 if (newPowerState) {
                     window.location.href = SpotifyService.getLoginUrl();
@@ -429,17 +375,42 @@ const Player: React.FC = () => {
 
             // If authenticated, always keep power on and use as play/pause button
             setIsPowerOn(true);
-            if (isPlaying) {
-                player?.pause();
-                SpotifyService.pausePlayback();
-                setIsPlaying(false);
-            } else {
-                player?.resume();
-                SpotifyService.resumePlayback();
-                setIsPlaying(true);
+            
+            // Check if we have any tracks to play
+            if (!currentTrackInfo && tracks.length > 0) {
+                console.log("🎵 No current track, starting playback with first track");
+                // Start playback with the first available track
+                const firstTrack = tracks[0];
+                SpotifyService.playTrack(firstTrack.id)
+                    .then(() => {
+                        console.log("✅ Started playback with first track:", firstTrack.name);
+                    })
+                    .catch((error) => {
+                        console.error("❌ Error starting playback:", error);
+                        setError("Failed to start playback. Please try again.");
+                    });
+                return;
             }
+            
+            // Handle play/pause for current track
+            if (player && isPlaying) {
+                console.log("🎵 Pausing playback via Web Playback SDK");
+                player.pause();
+            } else if (player && !isPlaying) {
+                console.log("🎵 Resuming playback via Web Playback SDK");
+                player.resume();
+            } else {
+                // Fallback to Spotify Web API if player isn't ready yet
+                console.log("🎵 Using Spotify Web API for playback control (player not ready)");
+                if (isPlaying) {
+                    SpotifyService.pausePlayback();
+                } else {
+                    SpotifyService.resumePlayback();
+                }
+            }
+            // Let the player_state_changed event handle isPlaying state
         },
-        [token, player, isPlaying],
+        [token, player, isPlaying, currentTrackInfo, tracks],
     );
 
     const handleLockStateChange = useCallback((newLockState: boolean) => {

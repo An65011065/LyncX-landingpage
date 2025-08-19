@@ -27,10 +27,11 @@ export const AdvancedPowerButton: React.FC<AdvancedPowerButtonProps> = ({
         setTimeout(() => {
             setIsPressed(false);
             if (isAuthenticated) {
-                // When authenticated, always call handler (for play/pause)
+                // When authenticated, just notify parent that button was clicked
+                // Parent will decide whether to play or pause based on current playback state
                 onPowerStateChange(true);
             } else {
-                // When not authenticated, toggle power state
+                // When not authenticated, toggle power state for OAuth flow
                 const newPowerState = !isPowerOn;
                 onPowerStateChange(newPowerState);
                 onLockStateChange(!newPowerState);
