@@ -183,11 +183,45 @@ const Player: React.FC = () => {
             SpotifyService.transferPlayback(device_id);
         });
 
+        player.addListener("not_ready", ({ device_id }) => {
+            console.log("Device ID has gone offline", device_id);
+            setIsPlaying(false);
+        });
+
         player.addListener("player_state_changed", (state) => {
+            console.log("🎵 Player state changed:", state);
             if (state) {
                 setIsPlaying(!state.paused);
                 setCurrentTrack(state.track_window.current_track.id);
+            } else {
+                console.log("⚠️ Player state is null - playback may have stopped");
+                setIsPlaying(false);
             }
+        });
+
+        player.addListener("initialization_error", ({ message }) => {
+            console.error("🎵 Initialization Error:", message);
+            setError("Failed to initialize player: " + message);
+        });
+
+        player.addListener("authentication_error", ({ message }) => {
+            console.error("🎵 Authentication Error:", message);
+            setError("Authentication failed: " + message);
+            // Clear token and require re-authentication
+            localStorage.removeItem("spotify_token");
+            setToken(null);
+            setIsPowerOn(false);
+        });
+
+        player.addListener("account_error", ({ message }) => {
+            console.error("🎵 Account Error:", message);
+            setError("Account error: " + message);
+        });
+
+        player.addListener("playback_error", ({ message }) => {
+            console.error("🎵 Playback Error:", message);
+            setError("Playback error: " + message);
+            setIsPlaying(false);
         });
 
         player.connect().then((success) => {
@@ -237,6 +271,66 @@ const Player: React.FC = () => {
                 });
         }
     }, [pendingTrackId, player, token]);
+
+    // Periodic state synchronization to ensure UI stays in sync with actual playback
+    useEffect(() => {
+        if (!player || !token) return;
+
+        const checkPlayerState = async () => {
+            try {
+                const state = await player.getCurrentState();
+                if (state) {
+                    const actuallyPlaying = !state.paused;
+                    if (actuallyPlaying !== isPlaying) {
+                        console.log(`🎵 Syncing player state: UI=${isPlaying}, Actual=${actuallyPlaying}`);
+                        setIsPlaying(actuallyPlaying);
+                    }
+                    setCurrentTrack(state.track_window.current_track.id);
+                } else {
+                    // No active session - ensure UI shows stopped
+                    if (isPlaying) {
+                        console.log("🎵 No active session detected, stopping UI playback indicator");
+                        setIsPlaying(false);
+                    }
+                }
+            } catch (error) {
+                console.error("🎵 Error checking player state:", error);
+                // On error, assume stopped
+                if (isPlaying) {
+                    setIsPlaying(false);
+                }
+            }
+        };
+
+        // Check state every 3 seconds
+        const stateChecker = setInterval(checkPlayerState, 3000);
+        
+        return () => clearInterval(stateChecker);
+    }, [player, token, isPlaying]);
+
+    // Check player state when window gains focus (user switches back to tab)
+    useEffect(() => {
+        if (!player || !token) return;
+
+        const handleFocus = async () => {
+            try {
+                console.log("🎵 Window focused, checking player state...");
+                const state = await player.getCurrentState();
+                if (state) {
+                    setIsPlaying(!state.paused);
+                    setCurrentTrack(state.track_window.current_track.id);
+                    console.log("🎵 State synced on focus:", !state.paused);
+                } else {
+                    setIsPlaying(false);
+                }
+            } catch (error) {
+                console.error("🎵 Error checking state on focus:", error);
+            }
+        };
+
+        window.addEventListener('focus', handleFocus);
+        return () => window.removeEventListener('focus', handleFocus);
+    }, [player, token]);
 
     const handleTrackSelect = useCallback(
         (trackId: string) => {
