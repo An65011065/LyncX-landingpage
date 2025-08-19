@@ -22,6 +22,7 @@ const Player: React.FC = () => {
         useState<SpotifyService.Playlist | null>(null);
     const [isDarkMode, setIsDarkMode] = useState(false);
     const [showTrackListModal, setShowTrackListModal] = useState(false);
+    const [pendingTrackId, setPendingTrackId] = useState<string | null>(null);
 
     useEffect(() => {
         if (!token) return;
@@ -55,17 +56,7 @@ const Player: React.FC = () => {
     }, [token]);
 
     useEffect(() => {
-        // Check localStorage first
-        const savedToken = localStorage.getItem("spotify_token");
-        if (savedToken) {
-            setToken(savedToken);
-            SpotifyService.setAccessToken(savedToken);
-            setIsPowerOn(true);
-            setIsLocked(false);
-            return;
-        }
-
-        // If no saved token, check URL hash
+        // Parse URL hash parameters first
         const hash = window.location.hash
             .substring(1)
             .split("&")
@@ -76,15 +67,47 @@ const Player: React.FC = () => {
                 }
                 return initial;
             }, {});
-        window.location.hash = "";
-        const _token = hash.access_token;
-        if (_token) {
-            setToken(_token);
-            SpotifyService.setAccessToken(_token);
+
+        // Priority 1: Check URL hash for token parameter (from extension)
+        let tokenFromUrl = hash.token;
+        
+        // Priority 2: Check URL hash for access_token (from OAuth callback)
+        if (!tokenFromUrl) {
+            tokenFromUrl = hash.access_token;
+        }
+
+        // Priority 3: Check localStorage for existing token
+        const savedToken = localStorage.getItem("spotify_token");
+
+        // Use the first available token (URL takes priority over localStorage)
+        const tokenToUse = tokenFromUrl || savedToken;
+
+        if (tokenToUse) {
+            setToken(tokenToUse);
+            SpotifyService.setAccessToken(tokenToUse);
             setIsPowerOn(true);
             setIsLocked(false);
-            // Save token to localStorage
-            localStorage.setItem("spotify_token", _token);
+            
+            // Save token to localStorage if it came from URL
+            if (tokenFromUrl) {
+                localStorage.setItem("spotify_token", tokenFromUrl);
+                console.log("🎵 Token received from extension and saved to localStorage");
+            } else {
+                console.log("🎵 Using existing token from localStorage");
+            }
+
+            // Handle track ID from URL for immediate playback context
+            if (hash.track) {
+                console.log("🎵 Track ID received from extension:", hash.track);
+                setPendingTrackId(hash.track);
+                
+                // We'll handle the actual playback once the player is initialized
+            }
+        }
+
+        // Clear the URL hash to clean up the URL
+        if (window.location.hash) {
+            window.location.hash = "";
         }
     }, []);
 
@@ -192,6 +215,28 @@ const Player: React.FC = () => {
             document.body.removeChild(script);
         };
     }, [token, initializePlayer]);
+
+    // Handle pending track playback when player is ready
+    useEffect(() => {
+        if (pendingTrackId && player && token) {
+            console.log("🎵 Playing pending track from extension:", pendingTrackId);
+            
+            // Try to play the track directly
+            SpotifyService.playTrack(pendingTrackId)
+                .then(() => {
+                    setIsPlaying(true);
+                    setCurrentTrack(pendingTrackId);
+                    setPendingTrackId(null); // Clear pending track
+                    console.log("✅ Successfully played track from extension");
+                })
+                .catch((error) => {
+                    console.error("❌ Error playing pending track:", error);
+                    // Still set as current track for UI context
+                    setCurrentTrack(pendingTrackId);
+                    setPendingTrackId(null);
+                });
+        }
+    }, [pendingTrackId, player, token]);
 
     const handleTrackSelect = useCallback(
         (trackId: string) => {
