@@ -198,14 +198,14 @@ const Player: React.FC = () => {
             console.log("🎵 Player state changed");
             if (state && state.track_window && state.track_window.current_track) {
                 const track = state.track_window.current_track;
-                console.log("🎵 Now playing:", track.name, "by", track.artists.map(a => a.name).join(", "));
+                console.log("🎵 Now playing:", track.name, "by", track.artists.map((a: any) => a.name).join(", "));
                 
                 setIsPlaying(!state.paused);
                 setCurrentTrack(track.id);
                 setCurrentTrackInfo({
                     id: track.id,
                     name: track.name,
-                    artist: track.artists.map(a => a.name).join(", "),
+                    artist: track.artists.map((a: any) => a.name).join(", "),
                     album: track.album.name
                 });
             } else {
@@ -289,14 +289,14 @@ const Player: React.FC = () => {
             const state = await player.getCurrentState();
             if (state && state.track_window && state.track_window.current_track) {
                 const track = state.track_window.current_track;
-                console.log("🎵 Updating track info:", track.name, "by", track.artists.map(a => a.name).join(", "));
+                console.log("🎵 Updating track info:", track.name, "by", track.artists.map((a: any) => a.name).join(", "));
                 
                 setIsPlaying(!state.paused);
                 setCurrentTrack(track.id);
                 setCurrentTrackInfo({
                     id: track.id,
                     name: track.name,
-                    artist: track.artists.map(a => a.name).join(", "),
+                    artist: track.artists.map((a: any) => a.name).join(", "),
                     album: track.album.name
                 });
             } else {
