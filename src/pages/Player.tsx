@@ -13,6 +13,12 @@ const Player: React.FC = () => {
     const [isPowerOn, setIsPowerOn] = useState(false);
     const [tracks, setTracks] = useState<SpotifyService.Track[]>([]);
     const [currentTrack, setCurrentTrack] = useState("");
+    const [currentTrackInfo, setCurrentTrackInfo] = useState<{
+        id: string;
+        name: string;
+        artist: string;
+        album: string;
+    } | null>(null);
     const [volume] = useState(1);
     const [player, setPlayer] = useState<any>(null);
     const [error, setError] = useState<string | null>(null);
@@ -190,9 +196,16 @@ const Player: React.FC = () => {
 
         player.addListener("player_state_changed", (state) => {
             console.log("🎵 Player state changed:", state);
-            if (state) {
+            if (state && state.track_window && state.track_window.current_track) {
+                const track = state.track_window.current_track;
                 setIsPlaying(!state.paused);
-                setCurrentTrack(state.track_window.current_track.id);
+                setCurrentTrack(track.id);
+                setCurrentTrackInfo({
+                    id: track.id,
+                    name: track.name,
+                    artist: track.artists.map(a => a.name).join(", "),
+                    album: track.album.name
+                });
             } else {
                 console.log("⚠️ Player state is null - playback may have stopped");
                 setIsPlaying(false);
@@ -279,13 +292,20 @@ const Player: React.FC = () => {
         const checkPlayerState = async () => {
             try {
                 const state = await player.getCurrentState();
-                if (state) {
+                if (state && state.track_window && state.track_window.current_track) {
                     const actuallyPlaying = !state.paused;
                     if (actuallyPlaying !== isPlaying) {
                         console.log(`🎵 Syncing player state: UI=${isPlaying}, Actual=${actuallyPlaying}`);
                         setIsPlaying(actuallyPlaying);
                     }
-                    setCurrentTrack(state.track_window.current_track.id);
+                    const track = state.track_window.current_track;
+                    setCurrentTrack(track.id);
+                    setCurrentTrackInfo({
+                        id: track.id,
+                        name: track.name,
+                        artist: track.artists.map(a => a.name).join(", "),
+                        album: track.album.name
+                    });
                 } else {
                     // No active session - ensure UI shows stopped
                     if (isPlaying) {
@@ -316,9 +336,16 @@ const Player: React.FC = () => {
             try {
                 console.log("🎵 Window focused, checking player state...");
                 const state = await player.getCurrentState();
-                if (state) {
+                if (state && state.track_window && state.track_window.current_track) {
                     setIsPlaying(!state.paused);
-                    setCurrentTrack(state.track_window.current_track.id);
+                    const track = state.track_window.current_track;
+                    setCurrentTrack(track.id);
+                    setCurrentTrackInfo({
+                        id: track.id,
+                        name: track.name,
+                        artist: track.artists.map(a => a.name).join(", "),
+                        album: track.album.name
+                    });
                     console.log("🎵 State synced on focus:", !state.paused);
                 } else {
                     setIsPlaying(false);
@@ -431,33 +458,24 @@ const Player: React.FC = () => {
                     />
 
                     {/* Now Playing Display */}
-                    {token && tracks.length > 0 && currentTrack && (
+                    {token && currentTrackInfo && (
                         <div className="text-center max-w-md transition-all duration-300">
-                            {(() => {
-                                const track = tracks.find(
-                                    (t) => t.id === currentTrack,
-                                );
-                                if (!track) return null;
-
-                                return (
-                                    <div className="space-y-0.5">
-                                        <div
-                                            className={`text-lg font-semibold truncate ${glassmorphism.text.primary(
-                                                isDarkMode,
-                                            )}`}
-                                        >
-                                            {track.name}
-                                        </div>
-                                        <div
-                                            className={`text-sm ${glassmorphism.text.muted(
-                                                isDarkMode,
-                                            )}`}
-                                        >
-                                            by {track.artist}
-                                        </div>
-                                    </div>
-                                );
-                            })()}
+                            <div className="space-y-0.5">
+                                <div
+                                    className={`text-lg font-semibold truncate ${glassmorphism.text.primary(
+                                        isDarkMode,
+                                    )}`}
+                                >
+                                    {currentTrackInfo.name}
+                                </div>
+                                <div
+                                    className={`text-sm ${glassmorphism.text.muted(
+                                        isDarkMode,
+                                    )}`}
+                                >
+                                    by {currentTrackInfo.artist}
+                                </div>
+                            </div>
                         </div>
                     )}
                 </div>
