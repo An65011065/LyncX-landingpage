@@ -187,6 +187,27 @@ const Player: React.FC = () => {
         player.addListener("ready", ({ device_id }) => {
             console.log("Ready with Device ID", device_id);
             SpotifyService.transferPlayback(device_id);
+            
+            // Immediately check for any existing playback state
+            setTimeout(async () => {
+                try {
+                    const state = await player.getCurrentState();
+                    if (state && state.track_window && state.track_window.current_track) {
+                        console.log("🎵 Found existing playback on player ready");
+                        const track = state.track_window.current_track;
+                        setIsPlaying(!state.paused);
+                        setCurrentTrack(track.id);
+                        setCurrentTrackInfo({
+                            id: track.id,
+                            name: track.name,
+                            artist: track.artists.map(a => a.name).join(", "),
+                            album: track.album.name
+                        });
+                    }
+                } catch (error) {
+                    console.log("🎵 No existing playback found on ready");
+                }
+            }, 1000); // Give a moment for any external API calls to take effect
         });
 
         player.addListener("not_ready", ({ device_id }) => {
@@ -198,6 +219,11 @@ const Player: React.FC = () => {
             console.log("🎵 Player state changed:", state);
             if (state && state.track_window && state.track_window.current_track) {
                 const track = state.track_window.current_track;
+                console.log("🎵 Track info from state:", {
+                    name: track.name,
+                    artists: track.artists.map(a => a.name),
+                    album: track.album.name
+                });
                 setIsPlaying(!state.paused);
                 setCurrentTrack(track.id);
                 setCurrentTrackInfo({
@@ -209,6 +235,7 @@ const Player: React.FC = () => {
             } else {
                 console.log("⚠️ Player state is null - playback may have stopped");
                 setIsPlaying(false);
+                setCurrentTrackInfo(null);
             }
         });
 
@@ -322,8 +349,8 @@ const Player: React.FC = () => {
             }
         };
 
-        // Check state every 3 seconds
-        const stateChecker = setInterval(checkPlayerState, 3000);
+        // Check state every 2 seconds (more frequent to catch external plays)
+        const stateChecker = setInterval(checkPlayerState, 2000);
         
         return () => clearInterval(stateChecker);
     }, [player, token, isPlaying]);
@@ -355,8 +382,20 @@ const Player: React.FC = () => {
             }
         };
 
+        // Check state on both focus and visibility change
+        const handleVisibilityChange = () => {
+            if (!document.hidden) {
+                handleFocus();
+            }
+        };
+
         window.addEventListener('focus', handleFocus);
-        return () => window.removeEventListener('focus', handleFocus);
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        
+        return () => {
+            window.removeEventListener('focus', handleFocus);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
     }, [player, token]);
 
     const handleTrackSelect = useCallback(
