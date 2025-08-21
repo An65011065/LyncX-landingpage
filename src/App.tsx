@@ -6,6 +6,7 @@ import PrivacyPage from "./components/Privacy";
 import PricingPage from "./components/Pricing";
 import FAQSection from "./components/faq";
 import CTASection from "./components/cta";
+import { CommandDemo } from "./components/demo/CommandDemo";
 import AuthPage from "./pages/auth";
 import Player from "./pages/Player";
 
@@ -26,9 +27,16 @@ const LandingPage: React.FC = () => {
 const App: React.FC = () => {
     return (
         <BrowserRouter>
-            <div className="min-h-screen" style={{ background: "#fffbf0", fontFamily: '"Nunito", sans-serif' }}>
+            <div
+                className="min-h-screen"
+                style={{
+                    background: "#fffbf0",
+                    fontFamily: '"Nunito", sans-serif',
+                }}
+            >
                 <Routes>
                     <Route path="/" element={<LandingPage />} />
+                    <Route path="/demo" element={<CommandDemo />} />
                     <Route path="/auth" element={<AuthPage />} />
                     <Route path="/play" element={<Player />} />
                     {/* Add more routes as needed */}
