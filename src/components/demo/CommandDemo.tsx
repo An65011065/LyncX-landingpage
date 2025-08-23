@@ -1,12 +1,13 @@
-import React, { useEffect, useState, useRef, useCallback } from "react";
-
-// TypeScript declarations for particles.js
-declare global {
-    interface Window {
-        particlesJS: (id: string, config: any) => void;
-        pJSDom: any[];
-    }
-}
+import React, { useEffect, useState, useRef } from "react";
+import FAQDemo from "./FAQDemo";
+import FooterDemo from "./FooterDemo";
+import ModularSection from "./ModularDemo";
+import visualizationImage from "../../../assets/visualization.png";
+import { DemoCommandBar, commandBrandColors } from "./DemoCommandBar";
+import emailVideo from "../../../assets/videos/email.mp4";
+import leetcodeVideo from "../../../assets/videos/leetcode.mp4";
+import redditVideo from "../../../assets/videos/reddit.mp4";
+import spotifyVideo from "../../../assets/videos/spotify.mp4";
 
 const DemoHeader: React.FC = () => {
     const [isScrolled, setIsScrolled] = useState(false);
@@ -61,7 +62,8 @@ const DemoHeader: React.FC = () => {
 const DemoHero: React.FC<{
     commandBarRef: React.RefObject<HTMLDivElement>;
     isCommandBarFixed: boolean;
-}> = ({ commandBarRef, isCommandBarFixed }) => {
+    onCommandChange: (commandIndex: number) => void;
+}> = ({ commandBarRef, isCommandBarFixed, onCommandChange }) => {
     return (
         <section className="min-h-screen flex items-center pt-20">
             <div className="w-full max-w-6xl mx-auto px-8">
@@ -99,38 +101,20 @@ const DemoHero: React.FC<{
                     </div>
 
                     <div className="lg:pl-28 flex justify-end items-start self-start">
-                        {/* Placeholder when command bar is fixed */}
-                        {/* {isCommandBarFixed && (
-                            <div
-                                className="bg-white/40 backdrop-blur-sm rounded-2xl border border-[var(--border)] shadow-lg p-6"
-                                style={{
-                                    height: "120px",
-                                    maxWidth: "500px",
-                                    width: "100%",
-                                }}
-                            />
-                        )} */}
-
                         {/* The actual command bar that will move */}
                         <div
                             ref={commandBarRef}
-                            className={`bg-white/80 backdrop-blur-sm rounded-2xl border border-[var(--border)] shadow-lg p-6 -mt-4`}
+                            className="bg-white/80 backdrop-blur-sm rounded-2xl border border-[var(--border)] shadow-lg p-6 -mt-4"
                             style={{
-                                maxWidth: isCommandBarFixed ? "500px" : "500px",
+                                maxWidth: "500px",
                                 width: "100%",
                             }}
                         >
-                            <div className="flex items-center gap-4 bg-[var(--bg)] rounded-xl px-4 py-4 border border-[var(--border)]">
-                                <div className="w-5 h-5 rounded-full bg-[var(--accent-color)] flex items-center justify-center">
-                                    <span className="text-white text-xs font-bold">
-                                        ⌘
-                                    </span>
-                                </div>
-                                <span className="text-[var(--muted-text)] font-mono text-lg">
-                                    spotify play chill music
-                                </span>
-                                <div className="ml-auto w-2 h-4 bg-[var(--accent-color)] rounded-sm animate-pulse"></div>
-                            </div>
+                            <DemoCommandBar
+                                commandBarRef={commandBarRef}
+                                isCommandBarFixed={isCommandBarFixed}
+                                onCommandChange={onCommandChange}
+                            />
                         </div>
                     </div>
                 </div>
@@ -174,10 +158,10 @@ const HelpSection: React.FC<{
     return (
         <section
             ref={helpSectionRef}
-            className="min-h-screen flex items-center justify-center py-20"
+            className="flex items-center justify-center pt-24 pb-44"
         >
             <div className="w-full max-w-6xl mx-auto px-8">
-                <div className="text-center mb-16">
+                <div className="text-center mb-12">
                     <h2 className="text-4xl md:text-5xl font-light mb-6 text-[var(--text)]">
                         Available{" "}
                         <span className="font-semibold text-[var(--accent-color)]">
@@ -190,21 +174,24 @@ const HelpSection: React.FC<{
                     </p>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-16">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                     {commands.map((command, index) => (
                         <div
                             key={index}
                             ref={index === 12 ? lyncxRef : undefined}
                             className={`${
                                 index === 12
-                                    ? "bg-gradient-to-br from-cyan-400 to-blue-500 border-cyan-300 z-10 p-5"
+                                    ? "z-10 p-5"
                                     : "bg-white/80 shadow-sm hover:shadow-md border-[var(--border)] p-4"
                             } backdrop-blur-sm border rounded-xl text-center transition-all duration-200`}
                             style={
                                 index === 12
                                     ? {
+                                          background:
+                                              "linear-gradient(135deg, #16162a 0%, #0f0f1f 50%, #16162a 100%)",
+                                          borderColor: "#16162a",
                                           boxShadow:
-                                              "0 0 20px rgba(34, 211, 238, 0.8), 0 0 40px rgba(59, 130, 246, 0.6), 0 0 60px rgba(34, 211, 238, 0.4)",
+                                              "0 0 20px rgba(22, 22, 42, 0.5), 0 0 40px rgba(22, 22, 42, 0.3), 0 0 60px rgba(22, 22, 42, 0.2)",
                                           animation:
                                               "glow 2s ease-in-out infinite alternate",
                                           transformOrigin: "center center",
@@ -230,28 +217,102 @@ const HelpSection: React.FC<{
     );
 };
 
+const DemoDescription: React.FC = () => {
+    return (
+        <section className="py-8 flex items-center justify-center">
+            <div className="w-full max-w-6xl mx-auto px-8 text-center">
+                <p className="text-2xl md:text-3xl font-light leading-relaxed text-[var(--text)]">
+                    LyncX unifies your browsing essentials in a single bar,
+                    <br />
+                    so you{" "}
+                    <span className="text-[var(--accent-color)] font-medium">
+                        move faster
+                    </span>
+                    ,{" "}
+                    <span className="text-[var(--accent-color)] font-medium">
+                        stay focused
+                    </span>
+                    , and{" "}
+                    <span className="text-[var(--accent-color)] font-medium">
+                        stay on top of what matters
+                    </span>
+                    .
+                </p>
+            </div>
+        </section>
+    );
+};
+
 const BrowserFrame: React.FC<{
     browserRef: React.RefObject<HTMLDivElement>;
     commandBarRef: React.RefObject<HTMLDivElement>;
     isCommandBarFixed: boolean;
     scrollProgress: number;
 }> = ({ browserRef, commandBarRef, isCommandBarFixed, scrollProgress }) => {
+    const [activeVideo, setActiveVideo] = useState<
+        "email" | "leetcode" | "reddit" | "spotify"
+    >("email");
+
+    const videos = {
+        email: emailVideo,
+        leetcode: leetcodeVideo,
+        reddit: redditVideo,
+        spotify: spotifyVideo,
+    };
+
     return (
-        <section className="min-h-screen flex items-center justify-center">
+        <section className="py-8 flex items-center justify-center">
             <div className="w-full max-w-6xl mx-auto px-8">
                 <div
                     ref={browserRef}
-                    className="relative bg-white/40 backdrop-blur-sm rounded-3xl border-2 border-[var(--border)] shadow-xl"
+                    className="relative bg-white/40 backdrop-blur-sm rounded-3xl border-2 border-[var(--border)] shadow-xl overflow-hidden"
                     style={{ height: "600px", width: "100%" }}
                 >
-                    {/* Empty - the command bar will be positioned here via fixed positioning */}
+                    {/* Video Content */}
+                    <div className="absolute inset-0 bg-gray-900 rounded-3xl overflow-hidden">
+                        <video
+                            key={activeVideo}
+                            className="w-full h-full object-cover"
+                            autoPlay
+                            muted
+                            loop
+                            playsInline
+                        >
+                            <source
+                                src={videos[activeVideo]}
+                                type="video/mp4"
+                            />
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+
+                    {/* Video Control Buttons */}
+                    <div className="absolute top-4 left-4 flex gap-2 z-10">
+                        {Object.keys(videos).map((videoKey) => (
+                            <button
+                                key={videoKey}
+                                onClick={() =>
+                                    setActiveVideo(
+                                        videoKey as keyof typeof videos,
+                                    )
+                                }
+                                className={`px-4 py-2 rounded-lg text-sm font-mono font-medium transition-all duration-200 ${
+                                    activeVideo === videoKey
+                                        ? "bg-[var(--accent-color)] text-white shadow-md"
+                                        : "bg-white/20 backdrop-blur-sm text-[var(--text)] hover:bg-white/30 hover:shadow-sm"
+                                }`}
+                            >
+                                /{videoKey}
+                            </button>
+                        ))}
+                    </div>
                 </div>
             </div>
         </section>
     );
 };
 
-// Background Pattern Components - Copied from MetricsCard.tsx
+// Background Pattern Components
 const CurvesPattern: React.FC<{ color: string }> = ({ color }) => (
     <svg
         className="card__bg"
@@ -397,7 +458,6 @@ const DataCard: React.FC<{
             className="relative w-full h-full rounded-xl overflow-hidden p-5 flex flex-col justify-between transition-transform duration-300 hover:scale-105"
             style={{ backgroundColor: color }}
         >
-            {/* Background Pattern */}
             <div className="absolute inset-0 pointer-events-none">
                 <BackgroundPattern
                     pattern={backgroundPattern}
@@ -405,7 +465,6 @@ const DataCard: React.FC<{
                 />
             </div>
 
-            {/* Header */}
             <div className="relative z-10 flex justify-between items-start gap-3">
                 <div className="text-sm font-medium uppercase tracking-wide text-white/90">
                     {title}
@@ -413,7 +472,6 @@ const DataCard: React.FC<{
                 <div className="flex-shrink-0 opacity-80">{icon}</div>
             </div>
 
-            {/* Content */}
             <div className="relative z-10 text-white">
                 <div className="text-4xl font-light leading-none mb-2 font-nunito">
                     {value}
@@ -430,7 +488,6 @@ const DataCard: React.FC<{
                 </div>
             </div>
 
-            {/* Overlay Content */}
             {showOverlay && overlayContent && (
                 <div className="absolute top-12 left-5 right-5 bottom-5 z-20 text-white overflow-hidden">
                     {overlayContent}
@@ -445,9 +502,8 @@ const DataBox: React.FC<{ activeTab: "ai" | "domains" | "activity" }> = ({
 }) => {
     const [showGrid, setShowGrid] = useState(true);
 
-    // Mock data
     const topDomains = [
-        { domain: "github.com", time: 2400 }, // 2400ms = 2.4h
+        { domain: "github.com", time: 2400 },
         { domain: "youtube.com", time: 1800 },
         { domain: "stackoverflow.com", time: 1200 },
         { domain: "twitter.com", time: 700 },
@@ -468,9 +524,9 @@ const DataBox: React.FC<{ activeTab: "ai" | "domains" | "activity" }> = ({
     };
 
     const cardColors = {
-        ai: "hsl(32, 62%, 47%)", // Warm amber
-        domains: "hsl(158, 43%, 33%)", // Cool teal
-        activity: "hsl(262, 44%, 53%)", // Purple
+        ai: "hsl(32, 62%, 47%)",
+        domains: "hsl(158, 43%, 33%)",
+        activity: "hsl(262, 44%, 53%)",
     };
 
     const renderCard = () => {
@@ -485,15 +541,7 @@ const DataBox: React.FC<{ activeTab: "ai" | "domains" | "activity" }> = ({
                         color={cardColors.ai}
                         backgroundPattern="curves"
                         icon={
-                            <div
-                                style={{
-                                    width: "20px",
-                                    height: "20px",
-                                    borderRadius: "50%",
-                                    backgroundColor: "white",
-                                    opacity: 0.8,
-                                }}
-                            />
+                            <div className="w-6 h-6 bg-white/20 rounded-full"></div>
                         }
                     />
                 );
@@ -513,15 +561,7 @@ const DataBox: React.FC<{ activeTab: "ai" | "domains" | "activity" }> = ({
                         color={cardColors.domains}
                         backgroundPattern="circles"
                         icon={
-                            <div
-                                style={{
-                                    width: "20px",
-                                    height: "20px",
-                                    borderRadius: "4px",
-                                    backgroundColor: "white",
-                                    opacity: 0.8,
-                                }}
-                            />
+                            <div className="w-6 h-6 bg-white/20 rounded-full"></div>
                         }
                         showOverlay={showGrid}
                         overlayContent={
@@ -619,15 +659,7 @@ const DataBox: React.FC<{ activeTab: "ai" | "domains" | "activity" }> = ({
                         color={cardColors.activity}
                         backgroundPattern="grass"
                         icon={
-                            <div
-                                style={{
-                                    width: "20px",
-                                    height: "20px",
-                                    borderRadius: "2px",
-                                    backgroundColor: "white",
-                                    opacity: 0.8,
-                                }}
-                            />
+                            <div className="w-6 h-6 bg-white/20 rounded-full"></div>
                         }
                     />
                 );
@@ -654,495 +686,134 @@ const DataBox: React.FC<{ activeTab: "ai" | "domains" | "activity" }> = ({
     );
 };
 
-const AnimationSpace: React.FC = () => {
+const TransitionText: React.FC<{
+    transitionTextRef: React.RefObject<HTMLElement>;
+}> = ({ transitionTextRef }) => {
+    return (
+        <section
+            ref={transitionTextRef}
+            className="py-12 flex items-center justify-center relative overflow-hidden"
+        >
+            <div className="w-full max-w-4xl mx-auto px-8 text-center">
+                <p className="transition-text text-2xl md:text-3xl font-light leading-relaxed text-[var(--text)]">
+                    When focus slips, LyncX{" "}
+                    <span className="text-[var(--accent-color)] font-medium">
+                        helps you see the patterns behind it
+                    </span>
+                </p>
+            </div>
+        </section>
+    );
+};
+
+const AnimationSpace: React.FC<{
+    dataCardRef: React.RefObject<HTMLDivElement>;
+    lyncxCardRef: React.RefObject<HTMLDivElement>;
+    viewCardRef: React.RefObject<HTMLDivElement>;
+    animationSpaceRef: React.RefObject<HTMLElement>;
+}> = ({ dataCardRef, lyncxCardRef, viewCardRef, animationSpaceRef }) => {
     const [activeTab, setActiveTab] = useState<"ai" | "domains" | "activity">(
         "ai",
     );
-    const particlesRef = useRef<HTMLDivElement>(null);
-    const [isPaused, setIsPaused] = useState(false);
-    const isPausedRef = useRef(false);
-    const lastClickTimeRef = useRef(0);
-
-    // Find closest particle to click coordinates
-    const findClosestParticle = useCallback(
-        (clickX: number, clickY: number) => {
-            if (!window.pJSDom || !window.pJSDom[0]) return null;
-
-            const particles = window.pJSDom[0].pJS.particles.array;
-            let closestIndex = -1;
-            let closestDistance = Infinity;
-            const maxClickDistance = 50; // Increased click radius
-
-            console.log("Searching for particle near", clickX, clickY);
-            console.log("Total particles:", particles.length);
-
-            particles.forEach((particle: any, index: number) => {
-                const dx = particle.x - clickX;
-                const dy = particle.y - clickY;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-
-                // Log first few particles for debugging
-                if (index < 5) {
-                    console.log(
-                        `Particle ${index} at (${particle.x}, ${particle.y}), distance: ${distance}`,
-                    );
-                }
-
-                if (distance < closestDistance) {
-                    closestDistance = distance;
-                    closestIndex = index;
-                }
-            });
-
-            console.log(
-                `Closest particle: ${closestIndex} at distance ${closestDistance}`,
-            );
-            console.log(`Max allowed distance: ${maxClickDistance}`);
-
-            return closestDistance <= maxClickDistance ? closestIndex : null;
-        },
-        [],
-    );
-
-    // Build connection map to understand particle relationships
-    const buildConnectionMap = useCallback(() => {
-        if (!window.pJSDom || !window.pJSDom[0]) return new Map();
-
-        const pJS = window.pJSDom[0].pJS;
-        const particles = pJS.particles.array;
-        const linkDistance = pJS.particles.line_linked.distance;
-        const connectionMap = new Map<number, number[]>();
-
-        // Build adjacency list
-        particles.forEach((particle: any, index: number) => {
-            const connections: number[] = [];
-
-            particles.forEach((otherParticle: any, otherIndex: number) => {
-                if (index === otherIndex) return;
-
-                const dx = particle.x - otherParticle.x;
-                const dy = particle.y - otherParticle.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-
-                if (distance <= linkDistance) {
-                    connections.push(otherIndex);
-                }
-            });
-
-            connectionMap.set(index, connections);
-        });
-
-        return connectionMap;
-    }, []);
-
-    // Trace path to target node (similar to usePathTracing logic)
-    const tracePathToNode = useCallback(
-        (targetIndex: number) => {
-            const connectionMap = buildConnectionMap();
-            const path: number[] = [];
-            const visited = new Set<number>();
-
-            // Simple path tracing - find a path by traversing connections
-            // Starting from nodes with fewer connections (likely earlier in chain)
-            const findPath = (
-                currentIndex: number,
-                targetIndex: number,
-                currentPath: number[],
-            ): boolean => {
-                if (currentIndex === targetIndex) {
-                    path.push(...currentPath, targetIndex);
-                    return true;
-                }
-
-                if (visited.has(currentIndex) || currentPath.length > 10) {
-                    // Prevent infinite loops
-                    return false;
-                }
-
-                visited.add(currentIndex);
-                const connections = connectionMap.get(currentIndex) || [];
-
-                // Try each connection
-                for (const nextIndex of connections) {
-                    if (!visited.has(nextIndex)) {
-                        if (
-                            findPath(nextIndex, targetIndex, [
-                                ...currentPath,
-                                currentIndex,
-                            ])
-                        ) {
-                            return true;
-                        }
-                    }
-                }
-
-                visited.delete(currentIndex);
-                return false;
-            };
-
-            // Try to find path starting from nodes with fewer connections
-            const allNodes = Array.from(connectionMap.keys());
-            const sortedNodes = allNodes.sort((a, b) => {
-                const aConnections = connectionMap.get(a)?.length || 0;
-                const bConnections = connectionMap.get(b)?.length || 0;
-                return aConnections - bConnections;
-            });
-
-            // Try starting from different nodes to find a good path
-            for (const startNode of sortedNodes) {
-                visited.clear();
-                const tempPath: number[] = [];
-                if (findPath(startNode, targetIndex, [])) {
-                    break;
-                }
-            }
-
-            // If no complex path found, just return connected nodes as simple path
-            if (path.length === 0) {
-                const directConnections = connectionMap.get(targetIndex) || [];
-                return [targetIndex, ...directConnections];
-            }
-
-            return path;
-        },
-        [buildConnectionMap],
-    );
-
-    // Simply draw numbers without changing particles
-    const drawPathNumbers = useCallback((pathIndices: number[]) => {
-        if (!window.pJSDom || !window.pJSDom[0]) return;
-
-        const particles = window.pJSDom[0].pJS.particles.array;
-        const canvas = window.pJSDom[0].pJS.canvas.el;
-        const ctx = canvas.getContext("2d");
-
-        // Just draw numbers on top of particles - don't change particles at all
-        setTimeout(() => {
-            if (ctx) {
-                ctx.font = 'bold 24px "Nunito", sans-serif';
-                ctx.textAlign = "left";
-                ctx.textBaseline = "middle";
-                ctx.fillStyle = "#E01E5B";
-
-                // Number particles in path order (1, 2, 3, ..., N)
-                pathIndices.forEach((particleIndex, order) => {
-                    const particle = particles[particleIndex];
-                    if (particle) {
-                        const number = (order + 1).toString();
-                        const offsetX = particle.x + particle.radius + 8;
-                        const offsetY = particle.y;
-
-                        ctx.fillText(number, offsetX, offsetY);
-                    }
-                });
-            }
-        }, 50);
-    }, []);
-
-    // Particle configuration
-    const getParticleConfig = () => ({
-        particles: {
-            number: {
-                value: 40,
-                density: {
-                    enable: true,
-                    value_area: 800,
-                },
-            },
-            color: {
-                value: ["#2EB67D", "#ECB22E", "#E01E5B", "#36C5F0"],
-            },
-            shape: {
-                type: ["circle"],
-                stroke: {
-                    width: 0,
-                    color: "#fff",
-                },
-            },
-            opacity: {
-                value: 1,
-                random: false,
-                anim: {
-                    enable: false,
-                    speed: 1,
-                    opacity_min: 0.1,
-                    sync: false,
-                },
-            },
-            size: {
-                value: 8,
-                random: true,
-                anim: {
-                    enable: false,
-                    speed: 10,
-                    size_min: 10,
-                    sync: false,
-                },
-            },
-            line_linked: {
-                enable: true,
-                distance: 150,
-                color: "#808080",
-                opacity: 0.4,
-                width: 1,
-            },
-            move: {
-                enable: true,
-                speed: 0.5,
-                direction: "none",
-                random: false,
-                straight: false,
-                out_mode: "bounce",
-                bounce: true,
-                attract: {
-                    enable: false,
-                    rotateX: 600,
-                    rotateY: 1200,
-                },
-            },
-        },
-        interactivity: {
-            detect_on: "canvas",
-            events: {
-                onhover: {
-                    enable: true,
-                    mode: "bubble",
-                },
-                onclick: {
-                    enable: false,
-                },
-                resize: true,
-            },
-            modes: {
-                bubble: {
-                    distance: 40,
-                    size: 16,
-                    duration: 0.3,
-                    opacity: 1,
-                },
-            },
-        },
-        retina_detect: true,
-    });
-
-    // Keep ref in sync with state
-    useEffect(() => {
-        isPausedRef.current = isPaused;
-    }, [isPaused]);
-
-    // Initialize particles.js
-    useEffect(() => {
-        let clickHandler: ((event: MouseEvent) => void) | null = null;
-
-        const handleCanvasClick = (event: MouseEvent) => {
-            const now = Date.now();
-
-            // Debounce clicks within 300ms to prevent double-firing
-            if (now - lastClickTimeRef.current < 300) {
-                console.log("Click debounced, ignoring duplicate");
-                return;
-            }
-            lastClickTimeRef.current = now;
-
-            const canvas = event.target as HTMLCanvasElement;
-            const rect = canvas.getBoundingClientRect();
-            const clickX = event.clientX - rect.left;
-            const clickY = event.clientY - rect.top;
-
-            console.log(
-                "Canvas click detected, isPaused:",
-                isPausedRef.current,
-            );
-
-            if (isPausedRef.current) {
-                // Second click - clear path trace and resume movement
-                console.log("Clearing path trace and resuming movement");
-                if (window.pJSDom && window.pJSDom[0]) {
-                    // Re-enable particle movement - this will trigger a redraw and clear the numbers
-                    window.pJSDom[0].pJS.particles.move.enable = true;
-
-                    // Restore all particles to full opacity
-                    const particles = window.pJSDom[0].pJS.particles.array;
-                    particles.forEach((particle: any) => {
-                        particle.opacity = 1;
-                    });
-
-                    // Force a refresh of the particle system to clear overlay numbers
-                    window.pJSDom[0].pJS.fn.particlesRefresh();
-                }
-                setIsPaused(false);
-            } else {
-                // First click - find particle and show path
-                const scaleX = canvas.width / rect.width;
-                const scaleY = canvas.height / rect.height;
-                const scaledClickX = clickX * scaleX;
-                const scaledClickY = clickY * scaleY;
-
-                const particleIndex = findClosestParticle(
-                    scaledClickX,
-                    scaledClickY,
-                );
-
-                if (particleIndex !== null) {
-                    const pathIndices = tracePathToNode(particleIndex);
-
-                    if (window.pJSDom && window.pJSDom[0]) {
-                        window.pJSDom[0].pJS.particles.move.enable = false;
-
-                        // Dim all particles not in the path
-                        const particles = window.pJSDom[0].pJS.particles.array;
-                        const pathSet = new Set(pathIndices);
-
-                        particles.forEach((particle: any, index: number) => {
-                            if (pathSet.has(index)) {
-                                // Keep path particles at full opacity
-                                particle.opacity = 1;
-                            } else {
-                                // Dim non-path particles
-                                particle.opacity = 0.2;
-                            }
-                        });
-                    }
-                    setIsPaused(true);
-
-                    drawPathNumbers(pathIndices);
-                    console.log("Drew path numbers and paused");
-                }
-            }
-        };
-
-        function initializeParticles() {
-            if (window.particlesJS && particlesRef.current) {
-                window.particlesJS("particles-js", getParticleConfig());
-
-                // Add single click handler
-                setTimeout(() => {
-                    if (window.pJSDom && window.pJSDom[0]) {
-                        const canvas = window.pJSDom[0].pJS.canvas.el;
-                        clickHandler = handleCanvasClick;
-                        canvas.addEventListener("click", clickHandler);
-                    }
-                }, 100);
-            }
-        }
-
-        // Load particles.js script if not already loaded
-        if (typeof window !== "undefined" && !window.particlesJS) {
-            const script = document.createElement("script");
-            script.src =
-                "https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js";
-            script.async = true;
-            script.onload = () => initializeParticles();
-            document.head.appendChild(script);
-        } else if (typeof window.particlesJS === "function") {
-            initializeParticles();
-        }
-
-        return () => {
-            if (clickHandler && window.pJSDom && window.pJSDom[0]) {
-                const canvas = window.pJSDom[0].pJS.canvas.el;
-                canvas.removeEventListener("click", clickHandler);
-            }
-            if (window.pJSDom && window.pJSDom.length > 0) {
-                window.pJSDom[0].pJS.fn.vendors.destroypJS();
-                window.pJSDom = [];
-            }
-        };
-    }, []);
 
     return (
-        <section className="h-screen w-full flex items-center justify-center relative bg-[var(--bg)]">
-            {/* Three feature sections */}
+        <section
+            ref={animationSpaceRef}
+            className="w-full flex items-center justify-center relative bg-[var(--bg)] py-16"
+        >
             <div className="relative z-10 w-full h-full flex items-center justify-center gap-12">
-                {/* Left: /data */}
                 <div className="flex flex-col items-center text-center relative">
-                    {/* Tab Buttons positioned over data card */}
-                    <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 z-20 flex gap-2">
-                        <button
-                            onClick={() => setActiveTab("ai")}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                                activeTab === "ai"
-                                    ? "bg-[var(--accent-color)] text-white"
-                                    : "bg-white/20 text-[var(--muted-text)] hover:bg-white/30"
-                            }`}
-                        >
-                            AI
-                        </button>
-                        <button
-                            onClick={() => setActiveTab("domains")}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                                activeTab === "domains"
-                                    ? "bg-[var(--accent-color)] text-white"
-                                    : "bg-white/20 text-[var(--muted-text)] hover:bg-white/30"
-                            }`}
-                        >
-                            domains
-                        </button>
-                        <button
-                            onClick={() => setActiveTab("activity")}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                                activeTab === "activity"
-                                    ? "bg-[var(--accent-color)] text-white"
-                                    : "bg-white/20 text-[var(--muted-text)] hover:bg-white/30"
-                            }`}
-                        >
-                            activity
-                        </button>
-                    </div>
+                    <h3 className="text-3xl font-bold text-[var(--text)] mb-2">
+                        /data
+                    </h3>
+                    <p className="text-[var(--muted-text)] text-sm mb-6 max-w-80">
+                        See where you spend your time and learn more about your
+                        browsing habits.
+                    </p>
 
-                    <div className="bg-white/10 backdrop-blur-sm rounded-xl border-2 border-[var(--border)] w-96 h-96 flex flex-col">
+                    <div
+                        ref={dataCardRef}
+                        className="bg-white/10 backdrop-blur-sm rounded-xl border-2 border-[var(--border)] w-96 h-96 flex flex-col relative"
+                    >
+                        <div className="absolute top-4 right-4 flex gap-2 z-20">
+                            <button
+                                onClick={() => setActiveTab("ai")}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                                    activeTab === "ai"
+                                        ? "bg-[var(--accent-color)] text-white"
+                                        : "bg-white/20 text-[var(--muted-text)] hover:bg-white/30"
+                                }`}
+                            >
+                                AI
+                            </button>
+                            <button
+                                onClick={() => setActiveTab("domains")}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                                    activeTab === "domains"
+                                        ? "bg-[var(--accent-color)] text-white"
+                                        : "bg-white/20 text-[var(--muted-text)] hover:bg-white/30"
+                                }`}
+                            >
+                                domains
+                            </button>
+                            <button
+                                onClick={() => setActiveTab("activity")}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                                    activeTab === "activity"
+                                        ? "bg-[var(--accent-color)] text-white"
+                                        : "bg-white/20 text-[var(--muted-text)] hover:bg-white/30"
+                                }`}
+                            >
+                                activity
+                            </button>
+                        </div>
                         <DataBox activeTab={activeTab} />
                     </div>
                 </div>
 
-                {/* Center: /lyncx with particles */}
                 <div className="flex flex-col items-center text-center">
-                    <div className="bg-[var(--accent-color)]/20 backdrop-blur-sm rounded-xl p-6 border-2 border-[var(--accent-color)]/50 w-96 h-96 relative overflow-hidden flex flex-col">
-                        {/* Header inside the container */}
-                        <div className="relative z-10 mb-4">
-                            <h3 className="text-3xl font-bold text-[var(--text)] mb-4">
-                                /lyncx
-                            </h3>
-                            <p className="text-[var(--muted-text)] text-sm">
-                                Visualize all your links.
-                                <br />
-                                Click on any node and see how you ended up
-                                there.
-                            </p>
-                        </div>
+                    <h3 className="text-3xl font-bold text-[var(--text)] mb-2">
+                        /lyncx
+                    </h3>
+                    <p className="text-[var(--muted-text)] text-sm mb-6">
+                        Visualize all your links.
+                        <br />
+                        Click on any node and see how you ended up there.
+                    </p>
 
-                        {/* Particles container inside lyncx box */}
+                    <div
+                        ref={lyncxCardRef}
+                        className="backdrop-blur-sm rounded-xl border-2 w-96 h-96 relative overflow-hidden"
+                        style={{
+                            backgroundColor: "#16162a",
+                            borderColor: "#16162a",
+                        }}
+                    >
                         <div
-                            id="particles-js"
-                            ref={particlesRef}
                             className="absolute inset-0 z-0 rounded-xl"
+                            style={{
+                                backgroundImage: `url(${visualizationImage})`,
+                                backgroundSize: "cover",
+                                backgroundPosition: "center",
+                                backgroundRepeat: "no-repeat",
+                            }}
                         />
                     </div>
                 </div>
 
-                {/* Right: /view */}
                 <div className="flex flex-col items-center text-center">
-                    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border-2 border-[var(--border)] w-96 h-96 flex flex-col">
-                        <h3 className="text-3xl font-bold text-[var(--text)] mb-4">
-                            /view
-                        </h3>
-                        <p className="text-[var(--muted-text)] mb-6">
-                            LyncX is a command line tool but it supports a
-                            companion UI for users who want to visualize their
-                            commands
-                        </p>
-                        <div className="space-y-2">
-                            <div className="text-sm text-[var(--muted-text)]">
-                                • Visual command interface
-                            </div>
-                            <div className="text-sm text-[var(--muted-text)]">
-                                • Interactive dashboards
-                            </div>
-                            <div className="text-sm text-[var(--muted-text)]">
-                                • Command visualization
-                            </div>
-                        </div>
-                    </div>
+                    <h3 className="text-3xl font-bold text-[var(--text)] mb-2">
+                        /view
+                    </h3>
+                    <p className="text-[var(--muted-text)] text-sm mb-6 max-w-80">
+                        LyncX supports a companion mode if you want to visualize
+                        your commands.
+                    </p>
+
+                    <div
+                        ref={viewCardRef}
+                        className="bg-white/10 backdrop-blur-sm rounded-xl border-2 border-[var(--border)] w-96 h-96"
+                    ></div>
                 </div>
             </div>
         </section>
@@ -1150,68 +821,31 @@ const AnimationSpace: React.FC = () => {
 };
 
 export const CommandDemo: React.FC = () => {
-    // Add custom CSS animation for the illumination effect
-    React.useEffect(() => {
-        const style = document.createElement("style");
-        style.textContent = `
-            @keyframes glow {
-                from {
-                    box-shadow: 0 0 20px rgba(34, 211, 238, 0.8), 0 0 40px rgba(59, 130, 246, 0.6), 0 0 60px rgba(34, 211, 238, 0.4);
-                }
-                to {
-                    box-shadow: 0 0 40px rgba(34, 211, 238, 1), 0 0 80px rgba(59, 130, 246, 0.8), 0 0 120px rgba(34, 211, 238, 0.6);
-                }
-            }
-        `;
-        document.head.appendChild(style);
-        return () => {
-            if (document.head.contains(style)) {
-                document.head.removeChild(style);
-            }
-        };
-    }, []);
+    // Refs
     const commandBarRef = useRef<HTMLDivElement>(null);
     const browserRef = useRef<HTMLDivElement>(null);
     const lyncxRef = useRef<HTMLDivElement>(null);
     const helpSectionRef = useRef<HTMLElement>(null);
+    const transitionTextRef = useRef<HTMLElement>(null);
+    const dataCardRef = useRef<HTMLDivElement>(null);
+    const lyncxCardRef = useRef<HTMLDivElement>(null);
+    const viewCardRef = useRef<HTMLDivElement>(null);
+    const animationSpaceRef = useRef<HTMLElement>(null);
+
+    // State
+    const [currentCommandIndex, setCurrentCommandIndex] = useState(0);
+
+    // Simple scroll-based animation state
     const originalPosition = useRef<{ top: number; left: number } | null>(null);
-    const lyncxOriginalPosition = useRef<{
-        top: number;
-        left: number;
-        width: number;
-        height: number;
-    } | null>(null);
-    const helpSectionBounds = useRef<{ top: number; bottom: number } | null>(
-        null,
-    );
     const [isAnimating, setIsAnimating] = useState(false);
-    const [isLyncxAnimating, setIsLyncxAnimating] = useState(false);
 
     useEffect(() => {
-        // Store original positions on mount
+        // Store original position on mount
         if (commandBarRef.current && !originalPosition.current) {
             const rect = commandBarRef.current.getBoundingClientRect();
             originalPosition.current = {
                 top: rect.top + window.scrollY,
                 left: rect.left + window.scrollX,
-            };
-        }
-
-        if (lyncxRef.current && !lyncxOriginalPosition.current) {
-            const rect = lyncxRef.current.getBoundingClientRect();
-            lyncxOriginalPosition.current = {
-                top: rect.top + window.scrollY,
-                left: rect.left + window.scrollX,
-                width: rect.width,
-                height: rect.height,
-            };
-        }
-
-        if (helpSectionRef.current && !helpSectionBounds.current) {
-            const rect = helpSectionRef.current.getBoundingClientRect();
-            helpSectionBounds.current = {
-                top: rect.top + window.scrollY,
-                bottom: rect.bottom + window.scrollY,
             };
         }
 
@@ -1243,13 +877,13 @@ export const CommandDemo: React.FC = () => {
                         if (!isAnimating) setIsAnimating(true);
 
                         // Calculate target position
-                        const viewportHeight = window.innerHeight;
-                        const targetY = scrollY + viewportHeight + 600; // 100px from bottom of viewport
+                        const targetY = scrollY + windowHeight - 100; // 100px from bottom of viewport
 
                         // Calculate proper center position accounting for command bar width
                         const commandBarWidth =
                             commandBarRef.current.offsetWidth;
-                        const targetX = window.innerWidth / 2 - commandBarWidth;
+                        const targetX =
+                            (window.innerWidth - commandBarWidth) / 2;
 
                         // Calculate progress (0 = start position, 1 = end position)
                         const totalScrollDistance =
@@ -1291,103 +925,6 @@ export const CommandDemo: React.FC = () => {
                         commandBarRef.current.style.zIndex = "";
                     }
 
-                    // Handle lyncx element animation
-                    if (
-                        lyncxRef.current &&
-                        lyncxOriginalPosition.current &&
-                        helpSectionBounds.current
-                    ) {
-                        // Start animation when we begin scrolling past the HelpSection
-                        // Animation starts when the bottom of HelpSection reaches the middle of viewport
-                        const helpSectionStart =
-                            helpSectionBounds.current.bottom -
-                            windowHeight * 0.7;
-
-                        // Calculate the end of the document
-                        const documentHeight =
-                            document.documentElement.scrollHeight;
-                        const helpSectionEnd = documentHeight - windowHeight;
-
-                        if (scrollY >= helpSectionStart) {
-                            // Animation phase
-                            if (!isLyncxAnimating) setIsLyncxAnimating(true);
-
-                            // Calculate progress through the HelpSection area
-                            const totalScrollDistance =
-                                helpSectionEnd - helpSectionStart;
-                            const currentScrollDistance =
-                                scrollY - helpSectionStart;
-                            const progress = Math.max(
-                                0,
-                                Math.min(
-                                    1,
-                                    currentScrollDistance / totalScrollDistance,
-                                ),
-                            );
-
-                            // Calculate target position (bottom center of viewport)
-                            const targetY = scrollY + windowHeight - 100; // 100px from bottom
-                            const targetWidth = window.innerWidth * 0.2; // 35% of viewport width
-                            const targetX =
-                                (window.innerWidth - targetWidth) / 2; // Center the element
-
-                            // Calculate current size - expand to 35vw gradually
-                            const currentWidth =
-                                lyncxOriginalPosition.current.width +
-                                (targetWidth -
-                                    lyncxOriginalPosition.current.width) *
-                                    progress;
-                            const currentHeight =
-                                lyncxOriginalPosition.current.height -
-                                lyncxOriginalPosition.current.height *
-                                    0.2 *
-                                    progress; // 20% height increase
-
-                            // Interpolate position
-                            const currentY =
-                                lyncxOriginalPosition.current.top +
-                                (targetY - lyncxOriginalPosition.current.top) *
-                                    progress;
-                            const currentX =
-                                lyncxOriginalPosition.current.left +
-                                (targetX - lyncxOriginalPosition.current.left) *
-                                    progress;
-
-                            // Apply fixed positioning and sizing
-                            lyncxRef.current.style.position = "fixed";
-                            lyncxRef.current.style.top = `${
-                                currentY - scrollY
-                            }px`;
-                            lyncxRef.current.style.left = `${currentX}px`;
-                            lyncxRef.current.style.width = `${currentWidth}px`;
-                            lyncxRef.current.style.height = `${currentHeight}px`;
-                            lyncxRef.current.style.borderRadius = `${
-                                16 + progress * 18
-                            }px`; // Increase roundness from 16px to 40px
-                            lyncxRef.current.style.display = "flex";
-                            lyncxRef.current.style.alignItems = "center";
-                            lyncxRef.current.style.justifyContent = "center";
-                            lyncxRef.current.style.zIndex = "60";
-                            lyncxRef.current.style.transition = "none"; // Disable CSS transitions during scroll animation
-                        } else {
-                            // Back to original position
-                            if (isLyncxAnimating) setIsLyncxAnimating(false);
-
-                            // Reset to natural positioning
-                            lyncxRef.current.style.position = "";
-                            lyncxRef.current.style.top = "";
-                            lyncxRef.current.style.left = "";
-                            lyncxRef.current.style.width = "";
-                            lyncxRef.current.style.height = "";
-                            lyncxRef.current.style.borderRadius = "";
-                            lyncxRef.current.style.display = "";
-                            lyncxRef.current.style.alignItems = "";
-                            lyncxRef.current.style.justifyContent = "";
-                            lyncxRef.current.style.zIndex = "";
-                            lyncxRef.current.style.transition = "";
-                        }
-                    }
-
                     ticking = false;
                 });
                 ticking = true;
@@ -1400,7 +937,35 @@ export const CommandDemo: React.FC = () => {
         return () => {
             window.removeEventListener("scroll", handleScroll);
         };
-    }, [isAnimating, isLyncxAnimating]);
+    }, [isAnimating]);
+
+    // Get current spotlight color
+    const getCurrentSpotlightColor = () => {
+        return (
+            commandBrandColors[currentCommandIndex] || "rgba(225, 226, 168, 1)"
+        );
+    };
+
+    // Add glow animation styles
+    useEffect(() => {
+        const style = document.createElement("style");
+        style.textContent = `
+            @keyframes glow {
+                from {
+                    box-shadow: 0 0 20px rgba(22, 22, 42, 0.5), 0 0 40px rgba(22, 22, 42, 0.3), 0 0 60px rgba(22, 22, 42, 0.2);
+                }
+                to {
+                    box-shadow: 0 0 40px rgba(22, 22, 42, 0.6), 0 0 80px rgba(22, 22, 42, 0.4), 0 0 120px rgba(22, 22, 42, 0.3);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+        return () => {
+            if (document.head.contains(style)) {
+                document.head.removeChild(style);
+            }
+        };
+    }, []);
 
     return (
         <div
@@ -1410,19 +975,60 @@ export const CommandDemo: React.FC = () => {
                 fontFamily: '"Nunito", sans-serif',
             }}
         >
+            {/* Spotlight that follows the command bar */}
+            <div
+                style={{
+                    position: "fixed",
+                    top: "50vh",
+                    left: "50%",
+                    transform:
+                        "scaleX(2.5) translateX(-50%) translateY(-52vh) rotateY(75deg)",
+                    zIndex: 25,
+                    height: "100vh",
+                    width: "120%",
+                    transformOrigin: "center center",
+                    perspective: "1206px",
+                    background: `radial-gradient(ellipse at 95% center, ${getCurrentSpotlightColor()} 5%, ${getCurrentSpotlightColor().replace(
+                        "1)",
+                        "0.5)",
+                    )} 30%, ${getCurrentSpotlightColor().replace(
+                        "1)",
+                        "0.125)",
+                    )} 60%, transparent)`,
+                    clipPath: "polygon(95% 38%, 0% 0%, 0% 100%, 95% 52%)",
+                    pointerEvents: "none",
+                    opacity: 0.6,
+                    transition: "background 0.8s ease-in-out",
+                }}
+            />
+
+            {/* Page Content */}
             <DemoHeader />
             <DemoHero
                 commandBarRef={commandBarRef}
                 isCommandBarFixed={isAnimating}
+                onCommandChange={(commandIndex) =>
+                    setCurrentCommandIndex(commandIndex)
+                }
             />
+            <DemoDescription />
             <BrowserFrame
                 browserRef={browserRef}
                 commandBarRef={commandBarRef}
-                isCommandBarFixed={isAnimating}
+                isCommandBarFixed={false}
                 scrollProgress={0}
             />
             <HelpSection lyncxRef={lyncxRef} helpSectionRef={helpSectionRef} />
-            <AnimationSpace />
+            <TransitionText transitionTextRef={transitionTextRef} />
+            <AnimationSpace
+                dataCardRef={dataCardRef}
+                lyncxCardRef={lyncxCardRef}
+                viewCardRef={viewCardRef}
+                animationSpaceRef={animationSpaceRef}
+            />
+            <ModularSection />
+            <FAQDemo />
+            <FooterDemo />
         </div>
     );
 };
