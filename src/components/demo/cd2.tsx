@@ -2,12 +2,14 @@ import React, { useEffect, useState, useRef } from "react";
 import FAQDemo from "./FAQDemo";
 import FooterDemo from "./FooterDemo";
 import ModularSection from "./ModularDemo";
-import visualizationImage from "../../../assets/visualization.png";
 import { DemoCommandBar, commandBrandColors } from "./DemoCommandBar";
-import emailVideo from "../../../assets/videos/email.mp4";
-import leetcodeVideo from "../../../assets/videos/leetcode.mp4";
-import redditVideo from "../../../assets/videos/reddit.mp4";
-import spotifyVideo from "../../../assets/videos/spotify.mp4";
+
+// Placeholder assets - replace with actual paths when assets are available
+const visualizationImage = "/placeholder-visualization.png";
+const emailVideo = "/placeholder-email.mp4";
+const leetcodeVideo = "/placeholder-leetcode.mp4";
+const redditVideo = "/placeholder-reddit.mp4";
+const spotifyVideo = "/placeholder-spotify.mp4";
 
 const DemoHeader: React.FC = () => {
     const [isScrolled, setIsScrolled] = useState(false);
@@ -39,7 +41,7 @@ const DemoHeader: React.FC = () => {
                         Features
                     </a>
                     <a
-                        href="#privacy"
+                        href="/privacy"
                         className="text-sm font-medium text-[var(--muted-text)] hover:text-[var(--text)] transition-colors duration-200"
                     >
                         Privacy
@@ -61,9 +63,8 @@ const DemoHeader: React.FC = () => {
 
 const DemoHero: React.FC<{
     commandBarRef: React.RefObject<HTMLDivElement>;
-    isCommandBarFixed: boolean;
     onCommandChange: (commandIndex: number) => void;
-}> = ({ commandBarRef, isCommandBarFixed, onCommandChange }) => {
+}> = ({ commandBarRef, onCommandChange }) => {
     return (
         <section className="min-h-screen flex items-center pt-20">
             <div className="w-full max-w-6xl mx-auto px-8">
@@ -112,7 +113,6 @@ const DemoHero: React.FC<{
                         >
                             <DemoCommandBar
                                 commandBarRef={commandBarRef}
-                                isCommandBarFixed={isCommandBarFixed}
                                 onCommandChange={onCommandChange}
                             />
                         </div>
@@ -245,10 +245,7 @@ const DemoDescription: React.FC = () => {
 
 const BrowserFrame: React.FC<{
     browserRef: React.RefObject<HTMLDivElement>;
-    commandBarRef: React.RefObject<HTMLDivElement>;
-    isCommandBarFixed: boolean;
-    scrollProgress: number;
-}> = ({ browserRef, commandBarRef, isCommandBarFixed, scrollProgress }) => {
+}> = ({ browserRef }) => {
     const [activeVideo, setActiveVideo] = useState<
         "email" | "leetcode" | "reddit" | "spotify"
     >("email");
@@ -500,7 +497,7 @@ const DataCard: React.FC<{
 const DataBox: React.FC<{ activeTab: "ai" | "domains" | "activity" }> = ({
     activeTab,
 }) => {
-    const [showGrid, setShowGrid] = useState(true);
+    const [showGrid] = useState(true);
 
     const topDomains = [
         { domain: "github.com", time: 2400 },
@@ -1006,7 +1003,6 @@ export const CommandDemo: React.FC = () => {
             <DemoHeader />
             <DemoHero
                 commandBarRef={commandBarRef}
-                isCommandBarFixed={isAnimating}
                 onCommandChange={(commandIndex) =>
                     setCurrentCommandIndex(commandIndex)
                 }
@@ -1014,9 +1010,6 @@ export const CommandDemo: React.FC = () => {
             <DemoDescription />
             <BrowserFrame
                 browserRef={browserRef}
-                commandBarRef={commandBarRef}
-                isCommandBarFixed={false}
-                scrollProgress={0}
             />
             <HelpSection lyncxRef={lyncxRef} helpSectionRef={helpSectionRef} />
             <TransitionText transitionTextRef={transitionTextRef} />

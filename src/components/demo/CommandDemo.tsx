@@ -2,14 +2,16 @@ import React, { useEffect, useState, useRef } from "react";
 import FAQDemo from "./FAQDemo";
 import FooterDemo from "./FooterDemo";
 import ModularSection from "./ModularDemo";
-import visualizationImage from "../../../assets/visualization.png";
 import { DemoCommandBar, commandBrandColors } from "./DemoCommandBar";
-import emailVideo from "../../../assets/videos/email.mp4";
-import leetcodeVideo from "../../../assets/videos/leetcode.mp4";
-import redditVideo from "../../../assets/videos/reddit.mp4";
-import spotifyVideo from "../../../assets/videos/spotify.mp4";
-import sessionVideo from "../../../assets/videos/session.mp4";
-import helpVideo from "../../../assets/videos/help.mp4";
+
+// Placeholder assets - replace with actual paths when assets are available
+const visualizationImage = "/placeholder-visualization.png";
+const emailVideo = "/placeholder-email.mp4";
+const leetcodeVideo = "/placeholder-leetcode.mp4";
+const redditVideo = "/placeholder-reddit.mp4";
+const spotifyVideo = "/placeholder-spotify.mp4";
+const sessionVideo = "/placeholder-session.mp4";
+const helpVideo = "/placeholder-help.mp4";
 
 const DemoHeader: React.FC = () => {
     const [isScrolled, setIsScrolled] = useState(false);
@@ -141,7 +143,7 @@ const DemoHero: React.FC<{
         onCommandChange(index);
     };
     // Spotlight control state
-    const [spotlightParams, setSpotlightParams] = useState({
+    const [spotlightParams] = useState({
         enabled: true,
         leftPosition: 0,
         topPosition: 46,
@@ -158,9 +160,6 @@ const DemoHero: React.FC<{
         gradient3: 60,
     });
 
-    const updateParam = (key: string, value: any) => {
-        setSpotlightParams((prev) => ({ ...prev, [key]: value }));
-    };
 
     // Smart color conversion: extract RGBA from command brand colors
     const getSpotlightColor = () => {
@@ -497,10 +496,8 @@ const DemoDescription: React.FC = () => {
 
 const BrowserFrame: React.FC<{
     browserRef: React.RefObject<HTMLDivElement>;
-    commandBarRef: React.RefObject<HTMLDivElement>;
-    isCommandBarFixed: boolean;
     scrollProgress: number;
-}> = ({ browserRef, commandBarRef, isCommandBarFixed, scrollProgress }) => {
+}> = ({ browserRef, scrollProgress }) => {
     const [activeVideo, setActiveVideo] = useState<
         "reddit" | "leetcode" | "email" | "spotify" | "session" | "help"
     >("reddit");
@@ -794,7 +791,7 @@ const DataCard: React.FC<{
 const DataBox: React.FC<{ activeTab: "ai" | "domains" | "activity" }> = ({
     activeTab,
 }) => {
-    const [showGrid, setShowGrid] = useState(true);
+    const [showGrid] = useState(true);
 
     const topDomains = [
         { domain: "github.com", time: 2400 },
@@ -1152,7 +1149,6 @@ export const CommandDemo: React.FC = () => {
     const animationSpaceRef = useRef<HTMLElement>(null);
 
     // State
-    const [currentCommandIndex, setCurrentCommandIndex] = useState(0);
     const [scrollProgress, setScrollProgress] = useState(0);
 
     // Scroll animation effect
@@ -1247,15 +1243,13 @@ export const CommandDemo: React.FC = () => {
             <DemoHeader />
             <DemoHero
                 commandBarRef={commandBarRef}
-                onCommandChange={setCurrentCommandIndex}
+                onCommandChange={() => {}}
                 scrollProgress={scrollProgress}
                 browserRef={browserRef}
             />
             <DemoDescription />
             <BrowserFrame
                 browserRef={browserRef}
-                commandBarRef={commandBarRef}
-                isCommandBarFixed={false}
                 scrollProgress={scrollProgress}
             />
             <HelpSection lyncxRef={lyncxRef} helpSectionRef={helpSectionRef} />
