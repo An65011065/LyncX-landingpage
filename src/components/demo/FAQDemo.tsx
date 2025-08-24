@@ -14,7 +14,7 @@ const FAQDemo: React.FC = () => {
     const faqs: FAQItem[] = [
         {
             question: "How does LyncX work?",
-            answer: "Simply type '/' on any tab to bring up the command bar. Then type what you want to do - like 'spotify' for music, 'history' to find past pages, or 'help' to see all available options. It's designed to feel natural and intuitive.",
+            answer: "Simply type '/' on any tab to bring up the command bar. Then type what you want to do - like 'note' for adding notes to a website, 'history' to find past pages, or 'spotify' to play music.",
         },
         {
             question: "Is my browsing private with LyncX?",
@@ -25,7 +25,7 @@ const FAQDemo: React.FC = () => {
         },
         {
             question: "Can I turn off data features?",
-            answer: "Absolutely! LyncX is completely modular. Through the settings, you can turn off or customize any features you don't want. You have full control over your experience.",
+            answer: "Absolutely! LyncX is completely modular. Through the settings, you can turn data features off.",
         },
         {
             question: "Can I download my data?",
@@ -83,7 +83,7 @@ const FAQDemo: React.FC = () => {
                             >
                                 <div>
                                     <p
-                                        className="text-[var(--muted-text)] leading-relaxed mb-4 font-medium"
+                                        className="text-[var(--muted-text)] leading-relaxed mb-4 font-medium whitespace-pre-line"
                                         style={{ fontFamily: "system-ui" }}
                                     >
                                         {faq.answer}

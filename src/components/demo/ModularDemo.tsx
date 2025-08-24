@@ -218,7 +218,7 @@ const DemoFlowModal: React.FC = () => {
 
 const DemoNotepadModal: React.FC = () => {
     const sampleNote =
-        "Working on the new user authentication system. Need to implement OAuth 2.0 flow and update the database schema. \n\nTODOs:\n- Set up OAuth provider\n- Update user model\n- Add JWT token handling\n- Write tests";
+        "Bias-Variance \n\nIn the general case, mean-squared error can be decomposed into three components: error due to bias, error due to variance, and error due to noise.\n\nError = Bias² + Variance + Noise\n\nFor underfit (low-complexity) models, the majority of our error comes from bias. Variance measures how much, on average, predictions vary for a given data point.\n\n- Bias: how far off our predictions are from the true value\n- Variance: how much predictions change with different training sets\n- Noise: irreducible error in the data\n\nHigh bias = underfitting (too simple)\nHigh variance = overfitting (too complex)\n\nGoal: find the sweet spot!";
 
     return (
         <div className="notepad-demo-modal">
@@ -236,8 +236,8 @@ const DemoNotepadModal: React.FC = () => {
 
             <div className="notepad-demo-domain-header">
                 <div className="demo-domain-selector">
-                    <h2 className="demo-domain-title">github.com</h2>
-                    <div className="demo-domain-count">3 notes</div>
+                    <h2 className="demo-domain-title">mlu-explain.github.io</h2>
+                    <div className="demo-domain-count">4 notes</div>
                 </div>
                 <div className="demo-status-indicator">
                     <div className="demo-saved-icon">✓</div>
@@ -259,10 +259,10 @@ const DemoNotepadModal: React.FC = () => {
             <div className="notepad-demo-tabs-section">
                 <div className="demo-domain-tabs">
                     <button className="demo-domain-tab active">
-                        github.com
+                        mlu-explain
                     </button>
-                    <button className="demo-domain-tab">stackoverflow</button>
-                    <button className="demo-domain-tab">medium.com</button>
+                    <button className="demo-domain-tab">coursera</button>
+                    <button className="demo-domain-tab">arxiv</button>
                 </div>
             </div>
 
@@ -276,8 +276,8 @@ const DemoNotepadModal: React.FC = () => {
 
             <div className="notepad-demo-footer">
                 <div className="demo-footer-stats">
-                    <span className="demo-word-count">32 words</span>
-                    <span className="demo-char-count">187 characters</span>
+                    <span className="demo-word-count">89 words</span>
+                    <span className="demo-char-count">567 characters</span>
                 </div>
                 <div className="demo-footer-status">Saved</div>
             </div>
@@ -495,7 +495,7 @@ const DemoTimebar: React.FC = () => {
             <div className="timebar-demo stage-warning">
                 <div className="timebar-demo-content">
                     <span className="timebar-demo-icon">⏱</span>
-                    <span className="timebar-demo-domain">github.com</span>
+                    <span className="timebar-demo-domain">canva.com</span>
                     <span className="timebar-demo-time">15:23</span>
                     <button className="timebar-demo-close-btn">×</button>
                 </div>
@@ -657,7 +657,7 @@ const DemoLimitModal: React.FC = () => {
                 <div className="limit-demo-header-icon">⏰</div>
                 <h1 className="limit-demo-modal-title">Daily Focus Time</h1>
                 <p className="limit-demo-modal-subtitle">
-                    Set a healthy limit for github.com
+                    Set a healthy limit for youtube.com
                 </p>
             </div>
 
@@ -857,8 +857,10 @@ const DemoSpotifyPlayer: React.FC = () => {
                 </div>
 
                 <div className="spotify-demo-track-info">
-                    <div className="spotify-demo-track-name">Midnight City</div>
-                    <div className="spotify-demo-artist-name">M83</div>
+                    <div className="spotify-demo-track-name">
+                        Sunsets in Georgia
+                    </div>
+                    <div className="spotify-demo-artist-name">JP</div>
                 </div>
 
                 <div className="spotify-demo-controls">

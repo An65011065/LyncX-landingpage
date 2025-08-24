@@ -8,9 +8,12 @@ import emailVideo from "../../../assets/videos/email.mp4";
 import leetcodeVideo from "../../../assets/videos/leetcode.mp4";
 import redditVideo from "../../../assets/videos/reddit.mp4";
 import spotifyVideo from "../../../assets/videos/spotify.mp4";
+import sessionVideo from "../../../assets/videos/session.mp4";
+import helpVideo from "../../../assets/videos/help.mp4";
 
 const DemoHeader: React.FC = () => {
     const [isScrolled, setIsScrolled] = useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -27,11 +30,13 @@ const DemoHeader: React.FC = () => {
                 isScrolled ? "shadow-sm" : ""
             }`}
         >
-            <nav className="max-w-7xl mx-auto flex justify-between items-center px-8 py-6">
-                <div className="text-2xl font-bold tracking-tight text-[var(--text)]">
+            <nav className="max-w-7xl mx-auto flex justify-between items-center px-4 sm:px-8 py-4 sm:py-6">
+                <div className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--text)]">
                     LyncX
                 </div>
-                <div className="flex gap-10 items-center">
+
+                {/* Desktop Navigation */}
+                <div className="hidden md:flex gap-10 items-center">
                     <a
                         href="#features"
                         className="text-sm font-medium text-[var(--muted-text)] hover:text-[var(--text)] transition-colors duration-200"
@@ -39,83 +44,273 @@ const DemoHeader: React.FC = () => {
                         Features
                     </a>
                     <a
-                        href="#privacy"
+                        href="/privacy"
                         className="text-sm font-medium text-[var(--muted-text)] hover:text-[var(--text)] transition-colors duration-200"
                     >
                         Privacy
-                    </a>
-                    <a
-                        href="#pricing"
-                        className="text-sm font-medium text-[var(--muted-text)] hover:text-[var(--text)] transition-colors duration-200"
-                    >
-                        Pricing
                     </a>
                     <button className="text-sm font-semibold bg-[var(--accent-color)] text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-200 hover:shadow-md">
                         Get Started
                     </button>
                 </div>
+
+                {/* Mobile Menu Button */}
+                <button
+                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                    className="md:hidden p-2 rounded-lg text-[var(--text)] hover:bg-[var(--border)] transition-colors duration-200"
+                    aria-label="Toggle mobile menu"
+                >
+                    <svg
+                        className="w-6 h-6"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        {isMobileMenuOpen ? (
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M6 18L18 6M6 6l12 12"
+                            />
+                        ) : (
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M4 6h16M4 12h16M4 18h16"
+                            />
+                        )}
+                    </svg>
+                </button>
             </nav>
+
+            {/* Mobile Navigation Menu */}
+            {isMobileMenuOpen && (
+                <div className="md:hidden border-t border-[var(--border)] bg-[var(--bg)]/98 backdrop-blur-sm">
+                    <div className="px-4 py-6 space-y-4">
+                        <a
+                            href="#features"
+                            className="block text-base font-medium text-[var(--muted-text)] hover:text-[var(--text)] transition-colors duration-200 py-2"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                            Features
+                        </a>
+                        <a
+                            href="/privacy"
+                            className="block text-base font-medium text-[var(--muted-text)] hover:text-[var(--text)] transition-colors duration-200 py-2"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                            Privacy
+                        </a>
+                    </div>
+                </div>
+            )}
         </header>
     );
 };
 
 const DemoHero: React.FC<{
     commandBarRef: React.RefObject<HTMLDivElement>;
-    isCommandBarFixed: boolean;
     onCommandChange: (commandIndex: number) => void;
-}> = ({ commandBarRef, isCommandBarFixed, onCommandChange }) => {
+    scrollProgress: number;
+    browserRef: React.RefObject<HTMLDivElement>;
+}> = ({ commandBarRef, onCommandChange, scrollProgress, browserRef }) => {
+    const [currentCommandIndex, setCurrentCommandIndex] = useState(0);
+    const [interpolatedColor, setInterpolatedColor] = useState({
+        r: 225,
+        g: 226,
+        b: 168,
+        a: 1,
+    });
+    const [isMobile, setIsMobile] = useState(false);
+
+    // Mobile detection
+    useEffect(() => {
+        const checkIsMobile = () => {
+            setIsMobile(window.innerWidth < 768);
+        };
+
+        checkIsMobile();
+        window.addEventListener("resize", checkIsMobile);
+        return () => window.removeEventListener("resize", checkIsMobile);
+    }, []);
+
+    const handleCommandChange = (index: number) => {
+        setCurrentCommandIndex(index);
+        onCommandChange(index);
+    };
+    // Spotlight control state
+    const [spotlightParams, setSpotlightParams] = useState({
+        enabled: true,
+        leftPosition: 0,
+        topPosition: 46,
+        height: 1000,
+        width: 80,
+        translateY: -450,
+        perspective: 1500,
+        scaleX: 1.2,
+        rotateY: 45,
+        colorCenter: { r: 225, g: 226, b: 168 },
+        opacity: 0.7,
+        gradient1: 5,
+        gradient2: 30,
+        gradient3: 60,
+    });
+
+    const updateParam = (key: string, value: any) => {
+        setSpotlightParams((prev) => ({ ...prev, [key]: value }));
+    };
+
+    // Smart color conversion: extract RGBA from command brand colors
+    const getSpotlightColor = () => {
+        const colorString =
+            commandBrandColors[currentCommandIndex] || commandBrandColors[0];
+        const matches = colorString.match(
+            /rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/,
+        );
+        if (matches) {
+            return {
+                r: Number(matches[1]),
+                g: Number(matches[2]),
+                b: Number(matches[3]),
+                a: matches[4] ? Number(matches[4]) : 1,
+            };
+        }
+        return { r: 225, g: 226, b: 168, a: 1 };
+    };
+
+    const targetSpotlightColor = getSpotlightColor();
+
+    // Smooth color interpolation
+    useEffect(() => {
+        const duration = 800; // 800ms transition
+        const startTime = Date.now();
+        const startColor = interpolatedColor;
+
+        const animate = () => {
+            const elapsed = Date.now() - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+
+            // Eased interpolation (smooth curve)
+            const easeProgress = 1 - Math.pow(1 - progress, 3);
+
+            setInterpolatedColor({
+                r: Math.round(
+                    startColor.r +
+                        (targetSpotlightColor.r - startColor.r) * easeProgress,
+                ),
+                g: Math.round(
+                    startColor.g +
+                        (targetSpotlightColor.g - startColor.g) * easeProgress,
+                ),
+                b: Math.round(
+                    startColor.b +
+                        (targetSpotlightColor.b - startColor.b) * easeProgress,
+                ),
+                a:
+                    startColor.a +
+                    (targetSpotlightColor.a - startColor.a) * easeProgress,
+            });
+
+            if (progress < 1) {
+                requestAnimationFrame(animate);
+            }
+        };
+
+        animate();
+    }, [currentCommandIndex]);
     return (
-        <section className="min-h-screen flex items-center pt-20">
-            <div className="w-full max-w-6xl mx-auto px-8">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+        <section className="min-h-screen flex items-center pt-20 relative">
+            {/* Desktop Spotlight Effect */}
+            {spotlightParams.enabled && !isMobile && (
+                <div
+                    className="absolute z-10 pointer-events-none"
+                    style={{
+                        left: `${spotlightParams.leftPosition}%`,
+                        top: `${spotlightParams.topPosition}%`,
+                        height: `${spotlightParams.height}px`,
+                        width: `${spotlightParams.width}%`,
+                        transformOrigin: "right center",
+                        transform: `translateY(${spotlightParams.translateY}px) perspective(${spotlightParams.perspective}px) scaleX(${spotlightParams.scaleX}) rotateY(${spotlightParams.rotateY}deg)`,
+                        background: `radial-gradient(ellipse at 95% center, rgba(${
+                            interpolatedColor.r
+                        }, ${interpolatedColor.g}, ${interpolatedColor.b}, ${
+                            interpolatedColor.a *
+                            spotlightParams.opacity *
+                            (1 - scrollProgress * 2)
+                        }) ${spotlightParams.gradient1}%, rgba(${
+                            interpolatedColor.r
+                        }, ${interpolatedColor.g}, ${interpolatedColor.b}, ${
+                            interpolatedColor.a *
+                            spotlightParams.opacity *
+                            0.5 *
+                            (1 - scrollProgress * 2)
+                        }) ${spotlightParams.gradient2}%, rgba(${
+                            interpolatedColor.r
+                        }, ${interpolatedColor.g}, ${interpolatedColor.b}, ${
+                            interpolatedColor.a *
+                            spotlightParams.opacity *
+                            0.125 *
+                            (1 - scrollProgress * 2)
+                        }) ${spotlightParams.gradient3}%, transparent)`,
+                        clipPath: "polygon(95% 48%, 0% 0%, 0% 100%, 95% 52%)",
+                    }}
+                />
+            )}
+
+            {/* Mobile Gradient Overlay - Bottom to Top */}
+            {spotlightParams.enabled && isMobile && (
+                <div
+                    className="absolute inset-0 z-10 pointer-events-none"
+                    style={{
+                        background: `linear-gradient(to top, rgba(${
+                            interpolatedColor.r
+                        }, ${interpolatedColor.g}, ${interpolatedColor.b}, ${
+                            interpolatedColor.a * 0.3 * (1 - scrollProgress * 2)
+                        }) 0%, rgba(${interpolatedColor.r}, ${
+                            interpolatedColor.g
+                        }, ${interpolatedColor.b}, ${
+                            interpolatedColor.a *
+                            0.15 *
+                            (1 - scrollProgress * 2)
+                        }) 30%, transparent 60%)`,
+                    }}
+                />
+            )}
+
+            <div className="w-full max-w-6xl mx-auto px-8 relative z-30">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 items-start">
                     <div>
-                        <h1 className="text-6xl md:text-7xl font-light mb-6 leading-tight text-[var(--text)] tracking-tight">
+                        <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-light mb-6 leading-tight text-[var(--text)] tracking-tight">
                             A command bar for{" "}
                             <span className="font-semibold text-[var(--accent-color)]">
                                 everything
                             </span>
                         </h1>
 
-                        <p className="text-xl mb-12 leading-relaxed text-[var(--muted-text)] font-medium">
+                        <p className="text-lg sm:text-xl mb-8 sm:mb-12 leading-relaxed text-[var(--muted-text)] font-medium">
                             LyncX lets you type what you want to do, without
                             having to open another tab
                         </p>
 
                         <div className="flex flex-col sm:flex-row gap-4">
-                            <button className="px-8 py-4 bg-[var(--accent-color)] text-white rounded-lg text-lg font-semibold transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 hover:bg-opacity-95">
+                            <button className="px-6 sm:px-8 py-3 sm:py-4 bg-[var(--accent-color)] text-white rounded-lg text-base sm:text-lg font-semibold transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 hover:bg-opacity-95 min-h-[44px]">
                                 Install Free
                             </button>
-                            <button className="px-8 py-4 border-2 border-[var(--accent-color)] text-[var(--accent-color)] rounded-lg text-lg font-semibold transition-all duration-300 hover:bg-[var(--accent-color)] hover:text-white">
+                            <button className="px-6 sm:px-8 py-3 sm:py-4 border-2 border-[var(--accent-color)] text-[var(--accent-color)] rounded-lg text-base sm:text-lg font-semibold transition-all duration-300 hover:bg-[var(--accent-color)] hover:text-white min-h-[44px]">
                                 Watch Demo
                             </button>
                         </div>
-
-                        <div className="mt-12">
-                            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/60 backdrop-blur-sm rounded-full border border-[var(--border)]">
-                                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                                <span className="text-sm text-[var(--muted-text)] font-medium">
-                                    Used by 10,000+ professionals
-                                </span>
-                            </div>
-                        </div>
                     </div>
 
-                    <div className="lg:pl-28 flex justify-end items-start self-start">
-                        {/* The actual command bar that will move */}
-                        <div
-                            ref={commandBarRef}
-                            className="bg-white/80 backdrop-blur-sm rounded-2xl border border-[var(--border)] shadow-lg p-6 -mt-4"
-                            style={{
-                                maxWidth: "500px",
-                                width: "100%",
-                            }}
-                        >
-                            <DemoCommandBar
-                                commandBarRef={commandBarRef}
-                                isCommandBarFixed={isCommandBarFixed}
-                                onCommandChange={onCommandChange}
-                            />
-                        </div>
+                    <div className="flex justify-center items-start self-start w-full">
+                        <DemoCommandBar
+                            commandBarRef={commandBarRef}
+                            onCommandChange={handleCommandChange}
+                            scrollProgress={scrollProgress}
+                            browserRef={browserRef}
+                        />
                     </div>
                 </div>
             </div>
@@ -127,32 +322,55 @@ const HelpSection: React.FC<{
     lyncxRef: React.RefObject<HTMLDivElement>;
     helpSectionRef: React.RefObject<HTMLElement>;
 }> = ({ lyncxRef, helpSectionRef }) => {
+    const [cardsRevealed, setCardsRevealed] = useState(false);
+
+    // Detect when user scrolls to this section
+    useEffect(() => {
+        const handleScroll = () => {
+            if (helpSectionRef.current) {
+                const rect = helpSectionRef.current.getBoundingClientRect();
+                const viewportHeight = window.innerHeight;
+
+                // Trigger animation when section is 50% visible, reverse when scrolled past
+                if (rect.top < viewportHeight * 0.5 && rect.bottom > 0) {
+                    setCardsRevealed(true);
+                } else {
+                    setCardsRevealed(false);
+                }
+            }
+        };
+
+        window.addEventListener("scroll", handleScroll, { passive: true });
+        handleScroll(); // Check initial position
+
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, [helpSectionRef]);
     const commands = [
-        "/spotify play [song]",
-        "/reopen tabs",
-        "/search [query]",
-        "/translate [text]",
-        "/weather [city]",
-        "/calculator [expression]",
-        "/timer [duration]",
-        "/notes add [text]",
-        "/history",
-        "/bookmarks",
-        "/screenshot",
-        "/data",
+        "/spotify",
+        "/gmail",
+        "/slack",
+        "/todo",
+        "/translate",
+        "/timer",
+        "/block",
+        "/limit",
+        "/remember",
+        "/recall",
+        "/ss",
+        "/chat",
         "/lyncx",
+        "/visualize",
+        "/cal",
+        "/new",
+        "/group",
+        "/arrange",
+        "/history",
+        "/next",
         "/view",
-        "/zoom out",
-        "/clear cache",
-        "/new tab",
-        "/close tab",
-        "/refresh",
-        "/back",
-        "/forward",
-        "/downloads",
-        "/settings",
-        "/help",
-        "/quit",
+        "/close",
+        "/switch",
+        "/sessions",
+        "/clip",
     ];
 
     return (
@@ -174,43 +392,78 @@ const HelpSection: React.FC<{
                     </p>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                    {commands.map((command, index) => (
-                        <div
-                            key={index}
-                            ref={index === 12 ? lyncxRef : undefined}
-                            className={`${
-                                index === 12
-                                    ? "z-10 p-5"
-                                    : "bg-white/80 shadow-sm hover:shadow-md border-[var(--border)] p-4"
-                            } backdrop-blur-sm border rounded-xl text-center transition-all duration-200`}
-                            style={
-                                index === 12
-                                    ? {
-                                          background:
-                                              "linear-gradient(135deg, #16162a 0%, #0f0f1f 50%, #16162a 100%)",
-                                          borderColor: "#16162a",
-                                          boxShadow:
-                                              "0 0 20px rgba(22, 22, 42, 0.5), 0 0 40px rgba(22, 22, 42, 0.3), 0 0 60px rgba(22, 22, 42, 0.2)",
-                                          animation:
-                                              "glow 2s ease-in-out infinite alternate",
-                                          transformOrigin: "center center",
-                                          willChange: "box-shadow",
-                                      }
-                                    : {}
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 relative">
+                    {commands.map((command, index) => {
+                        // Calculate animation styles for non-lyncx cards
+                        const getCardStyle = () => {
+                            if (index === 12) {
+                                // /lyncx card - always visible with special styling
+                                return {
+                                    background:
+                                        "linear-gradient(135deg, #16162a 0%, #0f0f1f 50%, #16162a 100%)",
+                                    borderColor: "#16162a",
+                                    boxShadow:
+                                        "0 0 20px rgba(22, 22, 42, 0.5), 0 0 40px rgba(22, 22, 42, 0.3), 0 0 60px rgba(22, 22, 42, 0.2)",
+                                    animation:
+                                        "glow 2s ease-in-out infinite alternate",
+                                    transformOrigin: "center center",
+                                    willChange: "box-shadow",
+                                };
                             }
-                        >
-                            <span
-                                className={`text-sm font-mono ${
+
+                            if (!cardsRevealed) {
+                                // Hide cards behind /lyncx - reverse stagger for hiding
+                                const reverseDelay =
+                                    (commands.length - 1 - index) * 30; // Reverse order, faster
+                                return {
+                                    transform: "translate(0px, 0px) scale(0.1)",
+                                    opacity: 0,
+                                    zIndex: 1,
+                                    transition: `all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${reverseDelay}ms`,
+                                };
+                            }
+
+                            // Revealed state - animate to normal position
+                            return {
+                                transform: "translate(0px, 0px) scale(1)",
+                                opacity: 1,
+                                transition: `all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) ${
+                                    index * 50
+                                }ms`,
+                                zIndex: 5,
+                            };
+                        };
+
+                        return (
+                            <div
+                                key={index}
+                                ref={index === 12 ? lyncxRef : undefined}
+                                className={`${
                                     index === 12
-                                        ? "text-white font-semibold"
-                                        : "text-[var(--muted-text)]"
-                                }`}
+                                        ? "z-10 p-5"
+                                        : "bg-white/80 shadow-sm hover:shadow-md border-[var(--border)] p-4"
+                                } backdrop-blur-sm border rounded-xl text-center`}
+                                style={getCardStyle()}
                             >
-                                {command}
-                            </span>
-                        </div>
-                    ))}
+                                <span
+                                    className={`text-sm font-mono ${
+                                        index === 12
+                                            ? "text-white font-semibold"
+                                            : "text-[var(--muted-text)]"
+                                    }`}
+                                >
+                                    {command}
+                                </span>
+                            </div>
+                        );
+                    })}
+                </div>
+
+                {/* +more text */}
+                <div className="text-center mt-8">
+                    <span className="text-sm text-[var(--muted-text)] opacity-90">
+                        +more
+                    </span>
                 </div>
             </div>
         </section>
@@ -219,12 +472,11 @@ const HelpSection: React.FC<{
 
 const DemoDescription: React.FC = () => {
     return (
-        <section className="py-8 flex items-center justify-center">
+        <section className="py-8 flex items-center justify-center relative z-10">
             <div className="w-full max-w-6xl mx-auto px-8 text-center">
                 <p className="text-2xl md:text-3xl font-light leading-relaxed text-[var(--text)]">
-                    LyncX unifies your browsing essentials in a single bar,
-                    <br />
-                    so you{" "}
+                    All your essentials in one single bar, so you
+                    <br />{" "}
                     <span className="text-[var(--accent-color)] font-medium">
                         move faster
                     </span>
@@ -250,33 +502,49 @@ const BrowserFrame: React.FC<{
     scrollProgress: number;
 }> = ({ browserRef, commandBarRef, isCommandBarFixed, scrollProgress }) => {
     const [activeVideo, setActiveVideo] = useState<
-        "email" | "leetcode" | "reddit" | "spotify"
-    >("email");
+        "reddit" | "leetcode" | "email" | "spotify" | "session" | "help"
+    >("reddit");
+
+    const videoRef = useRef<HTMLVideoElement>(null);
 
     const videos = {
-        email: emailVideo,
-        leetcode: leetcodeVideo,
         reddit: redditVideo,
+        leetcode: leetcodeVideo,
+        email: emailVideo,
         spotify: spotifyVideo,
+        session: sessionVideo,
+        help: helpVideo,
     };
 
+    // Control video playback based on scroll progress and video changes
+    useEffect(() => {
+        const video = videoRef.current;
+        if (video) {
+            if (scrollProgress >= 1) {
+                video.play().catch(console.error);
+            } else {
+                video.pause();
+            }
+        }
+    }, [scrollProgress, activeVideo]);
+
     return (
-        <section className="py-8 flex items-center justify-center">
+        <section className="py-8 flex flex-col items-center justify-center relative z-10">
             <div className="w-full max-w-6xl mx-auto px-8">
                 <div
                     ref={browserRef}
-                    className="relative bg-white/40 backdrop-blur-sm rounded-3xl border-2 border-[var(--border)] shadow-xl overflow-hidden"
-                    style={{ height: "600px", width: "100%" }}
+                    className="relative bg-white/40 backdrop-blur-sm rounded-xl sm:rounded-3xl border-2 border-[var(--border)] shadow-xl overflow-hidden h-[300px] sm:h-[400px] lg:h-[600px] w-full"
                 >
                     {/* Video Content */}
-                    <div className="absolute inset-0 bg-gray-900 rounded-3xl overflow-hidden">
+                    <div className="absolute inset-0 bg-gray-900 rounded-xl sm:rounded-3xl overflow-hidden">
                         <video
+                            ref={videoRef}
                             key={activeVideo}
                             className="w-full h-full object-cover"
-                            autoPlay
                             muted
                             loop
                             playsInline
+                            preload="metadata"
                         >
                             <source
                                 src={videos[activeVideo]}
@@ -285,10 +553,13 @@ const BrowserFrame: React.FC<{
                             Your browser does not support the video tag.
                         </video>
                     </div>
+                </div>
 
-                    {/* Video Control Buttons */}
-                    <div className="absolute top-4 left-4 flex gap-2 z-10">
-                        {Object.keys(videos).map((videoKey) => (
+                {/* Video Control Buttons - Now below the browser frame */}
+                <div className="flex flex-col sm:flex-row justify-center items-center gap-2 sm:gap-4 mt-6 px-4">
+                    {/* Website buttons (reddit, leetcode) */}
+                    <div className="flex gap-2">
+                        {["reddit", "leetcode"].map((videoKey) => (
                             <button
                                 key={videoKey}
                                 onClick={() =>
@@ -296,15 +567,38 @@ const BrowserFrame: React.FC<{
                                         videoKey as keyof typeof videos,
                                     )
                                 }
-                                className={`px-4 py-2 rounded-lg text-sm font-mono font-medium transition-all duration-200 ${
+                                className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-mono font-medium transition-all duration-200 ${
                                     activeVideo === videoKey
                                         ? "bg-[var(--accent-color)] text-white shadow-md"
                                         : "bg-white/20 backdrop-blur-sm text-[var(--text)] hover:bg-white/30 hover:shadow-sm"
                                 }`}
                             >
-                                /{videoKey}
+                                {videoKey}
                             </button>
                         ))}
+                    </div>
+
+                    {/* Command buttons (session, spotify, email, help) */}
+                    <div className="flex flex-wrap justify-center gap-2">
+                        {["session", "spotify", "email", "help"].map(
+                            (videoKey) => (
+                                <button
+                                    key={videoKey}
+                                    onClick={() =>
+                                        setActiveVideo(
+                                            videoKey as keyof typeof videos,
+                                        )
+                                    }
+                                    className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-mono font-medium transition-all duration-200 ${
+                                        activeVideo === videoKey
+                                            ? "bg-[var(--accent-color)] text-white shadow-md"
+                                            : "bg-white/20 backdrop-blur-sm text-[var(--text)] hover:bg-white/30 hover:shadow-sm"
+                                    }`}
+                                >
+                                    /{videoKey}
+                                </button>
+                            ),
+                        )}
                     </div>
                 </div>
             </div>
@@ -721,9 +1015,9 @@ const AnimationSpace: React.FC<{
             ref={animationSpaceRef}
             className="w-full flex items-center justify-center relative bg-[var(--bg)] py-16"
         >
-            <div className="relative z-10 w-full h-full flex items-center justify-center gap-12">
+            <div className="relative z-10 w-full h-full flex flex-col lg:flex-row items-center justify-center gap-8 sm:gap-12 px-4">
                 <div className="flex flex-col items-center text-center relative">
-                    <h3 className="text-3xl font-bold text-[var(--text)] mb-2">
+                    <h3 className="text-2xl sm:text-3xl font-bold text-[var(--text)] mb-2">
                         /data
                     </h3>
                     <p className="text-[var(--muted-text)] text-sm mb-6 max-w-80">
@@ -733,7 +1027,7 @@ const AnimationSpace: React.FC<{
 
                     <div
                         ref={dataCardRef}
-                        className="bg-white/10 backdrop-blur-sm rounded-xl border-2 border-[var(--border)] w-96 h-96 flex flex-col relative"
+                        className="bg-white/10 backdrop-blur-sm rounded-xl border-2 border-[var(--border)] w-[320px] h-[320px] sm:w-80 sm:h-80 lg:w-96 lg:h-96 flex flex-col relative"
                     >
                         <div className="absolute top-4 right-4 flex gap-2 z-20">
                             <button
@@ -772,8 +1066,8 @@ const AnimationSpace: React.FC<{
                 </div>
 
                 <div className="flex flex-col items-center text-center">
-                    <h3 className="text-3xl font-bold text-[var(--text)] mb-2">
-                        /lyncx
+                    <h3 className="text-2xl sm:text-3xl font-bold text-[var(--text)] mb-2">
+                        /visualize
                     </h3>
                     <p className="text-[var(--muted-text)] text-sm mb-6">
                         Visualize all your links.
@@ -783,7 +1077,7 @@ const AnimationSpace: React.FC<{
 
                     <div
                         ref={lyncxCardRef}
-                        className="backdrop-blur-sm rounded-xl border-2 w-96 h-96 relative overflow-hidden"
+                        className="backdrop-blur-sm rounded-xl border-2 w-[320px] h-[320px] sm:w-80 sm:h-80 lg:w-96 lg:h-96 relative overflow-hidden"
                         style={{
                             backgroundColor: "#16162a",
                             borderColor: "#16162a",
@@ -802,18 +1096,43 @@ const AnimationSpace: React.FC<{
                 </div>
 
                 <div className="flex flex-col items-center text-center">
-                    <h3 className="text-3xl font-bold text-[var(--text)] mb-2">
-                        /view
+                    <h3 className="text-2xl sm:text-3xl font-bold text-[var(--text)] mb-2">
+                        /download
                     </h3>
                     <p className="text-[var(--muted-text)] text-sm mb-6 max-w-80">
-                        LyncX supports a companion mode if you want to visualize
-                        your commands.
+                        You can download your data, already standardized for R
+                        or Python.
                     </p>
 
                     <div
                         ref={viewCardRef}
-                        className="bg-white/10 backdrop-blur-sm rounded-xl border-2 border-[var(--border)] w-96 h-96"
-                    ></div>
+                        className="backdrop-blur-sm rounded-xl border-2 w-[320px] h-[320px] sm:w-80 sm:h-80 lg:w-96 lg:h-96 flex flex-col items-center justify-center gap-6"
+                        style={{
+                            backgroundColor: "#1e3a8a",
+                            borderColor: "#1e3a8a",
+                        }}
+                    >
+                        {/* Big Bold Downward Arrow */}
+                        <svg
+                            width="120"
+                            height="120"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="text-blue-300"
+                        >
+                            <path d="M12 5v14" />
+                            <path d="M19 12l-7 7-7-7" />
+                        </svg>
+
+                        {/* CSV Text */}
+                        <div className="text-2xl font-bold text-white">
+                            .CSV
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -834,117 +1153,65 @@ export const CommandDemo: React.FC = () => {
 
     // State
     const [currentCommandIndex, setCurrentCommandIndex] = useState(0);
+    const [scrollProgress, setScrollProgress] = useState(0);
 
-    // Simple scroll-based animation state
-    const originalPosition = useRef<{ top: number; left: number } | null>(null);
-    const [isAnimating, setIsAnimating] = useState(false);
-
+    // Scroll animation effect
     useEffect(() => {
-        // Store original position on mount
-        if (commandBarRef.current && !originalPosition.current) {
-            const rect = commandBarRef.current.getBoundingClientRect();
-            originalPosition.current = {
-                top: rect.top + window.scrollY,
-                left: rect.left + window.scrollX,
-            };
-        }
+        let animationEnd = 0;
 
-        let ticking = false;
+        const calculateAnimationEnd = () => {
+            if (!commandBarRef.current || !browserRef.current) return 0;
+
+            // Reset scroll to get initial positions
+            const currentScroll = window.scrollY;
+            window.scrollTo(0, 0);
+
+            const commandBarRect =
+                commandBarRef.current.getBoundingClientRect();
+            const browserRect = browserRef.current.getBoundingClientRect();
+
+            // Calculate distance needed
+            const distance = browserRect.bottom - commandBarRect.top;
+
+            // Restore scroll
+            window.scrollTo(0, currentScroll);
+
+            return distance;
+        };
 
         const handleScroll = () => {
-            if (!ticking) {
-                requestAnimationFrame(() => {
-                    if (
-                        !commandBarRef.current ||
-                        !browserRef.current ||
-                        !originalPosition.current
-                    ) {
-                        ticking = false;
-                        return;
-                    }
+            const scrollY = window.scrollY;
 
-                    const scrollY = window.scrollY;
-                    const windowHeight = window.innerHeight;
-                    const browserRect =
-                        browserRef.current.getBoundingClientRect();
+            // Calculate animation end point once
+            if (animationEnd === 0) {
+                animationEnd = calculateAnimationEnd();
+                console.log("Animation end calculated:", animationEnd);
+            }
 
-                    // Start animation when original position would reach middle of screen
-                    const startThreshold =
-                        originalPosition.current.top - windowHeight * 0.5;
+            // Animation starts immediately when scroll is detected
+            // Make animation complete faster by reducing the distance needed
+            const adjustedAnimationEnd = animationEnd * 0.6; // Complete movement at 80%, allow extra scroll for scaling
 
-                    if (scrollY >= startThreshold) {
-                        // Animation phase
-                        if (!isAnimating) setIsAnimating(true);
-
-                        // Calculate target position
-                        const targetY = scrollY + windowHeight - 100; // 100px from bottom of viewport
-
-                        // Calculate proper center position accounting for command bar width
-                        const commandBarWidth =
-                            commandBarRef.current.offsetWidth;
-                        const targetX =
-                            (window.innerWidth - commandBarWidth) / 2;
-
-                        // Calculate progress (0 = start position, 1 = end position)
-                        const totalScrollDistance =
-                            browserRect.bottom + scrollY - startThreshold;
-                        const currentScrollDistance = scrollY - startThreshold;
-                        let progress = Math.max(
-                            0,
-                            Math.min(
-                                1,
-                                currentScrollDistance / totalScrollDistance,
-                            ),
-                        );
-
-                        // Interpolate position
-                        const currentY =
-                            originalPosition.current.top +
-                            (targetY - originalPosition.current.top) * progress;
-                        const currentX =
-                            originalPosition.current.left +
-                            (targetX - originalPosition.current.left) *
-                                progress;
-
-                        // Apply fixed positioning
-                        commandBarRef.current.style.position = "fixed";
-                        const viewportY = currentY - scrollY;
-                        commandBarRef.current.style.top = `${viewportY}px`;
-                        commandBarRef.current.style.left = `${currentX}px`;
-                        commandBarRef.current.style.transform = "";
-                        commandBarRef.current.style.zIndex = "50";
-                    } else {
-                        // Back to original position
-                        if (isAnimating) setIsAnimating(false);
-
-                        // Reset to natural positioning
-                        commandBarRef.current.style.position = "";
-                        commandBarRef.current.style.top = "";
-                        commandBarRef.current.style.left = "";
-                        commandBarRef.current.style.transform = "";
-                        commandBarRef.current.style.zIndex = "";
-                    }
-
-                    ticking = false;
-                });
-                ticking = true;
+            if (scrollY <= 0) {
+                setScrollProgress(0);
+            } else if (scrollY >= adjustedAnimationEnd) {
+                setScrollProgress(1);
+            } else {
+                const progress = scrollY / adjustedAnimationEnd;
+                setScrollProgress(Math.min(Math.max(progress, 0), 1));
             }
         };
 
+        // Delay initial calculation to ensure layout is complete
+        setTimeout(() => {
+            animationEnd = calculateAnimationEnd();
+            handleScroll();
+        }, 100);
+
         window.addEventListener("scroll", handleScroll, { passive: true });
-        handleScroll();
 
-        return () => {
-            window.removeEventListener("scroll", handleScroll);
-        };
-    }, [isAnimating]);
-
-    // Get current spotlight color
-    const getCurrentSpotlightColor = () => {
-        return (
-            commandBrandColors[currentCommandIndex] || "rgba(225, 226, 168, 1)"
-        );
-    };
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, []);
 
     // Add glow animation styles
     useEffect(() => {
@@ -973,50 +1240,23 @@ export const CommandDemo: React.FC = () => {
             style={{
                 background: "var(--bg)",
                 fontFamily: '"Nunito", sans-serif',
+                overflowX: "hidden",
             }}
         >
-            {/* Spotlight that follows the command bar */}
-            <div
-                style={{
-                    position: "fixed",
-                    top: "50vh",
-                    left: "50%",
-                    transform:
-                        "scaleX(2.5) translateX(-50%) translateY(-52vh) rotateY(75deg)",
-                    zIndex: 25,
-                    height: "100vh",
-                    width: "120%",
-                    transformOrigin: "center center",
-                    perspective: "1206px",
-                    background: `radial-gradient(ellipse at 95% center, ${getCurrentSpotlightColor()} 5%, ${getCurrentSpotlightColor().replace(
-                        "1)",
-                        "0.5)",
-                    )} 30%, ${getCurrentSpotlightColor().replace(
-                        "1)",
-                        "0.125)",
-                    )} 60%, transparent)`,
-                    clipPath: "polygon(95% 38%, 0% 0%, 0% 100%, 95% 52%)",
-                    pointerEvents: "none",
-                    opacity: 0.6,
-                    transition: "background 0.8s ease-in-out",
-                }}
-            />
-
             {/* Page Content */}
             <DemoHeader />
             <DemoHero
                 commandBarRef={commandBarRef}
-                isCommandBarFixed={isAnimating}
-                onCommandChange={(commandIndex) =>
-                    setCurrentCommandIndex(commandIndex)
-                }
+                onCommandChange={setCurrentCommandIndex}
+                scrollProgress={scrollProgress}
+                browserRef={browserRef}
             />
             <DemoDescription />
             <BrowserFrame
                 browserRef={browserRef}
                 commandBarRef={commandBarRef}
                 isCommandBarFixed={false}
-                scrollProgress={0}
+                scrollProgress={scrollProgress}
             />
             <HelpSection lyncxRef={lyncxRef} helpSectionRef={helpSectionRef} />
             <TransitionText transitionTextRef={transitionTextRef} />
