@@ -261,7 +261,7 @@ const DemoNotepadModal: React.FC = () => {
                     <button className="demo-domain-tab active">
                         mlu-explain
                     </button>
-                    <button className="demo-domain-tab">coursera</button>
+                    <button className="demo-domain-tab">facebook</button>
                     <button className="demo-domain-tab">arxiv</button>
                 </div>
             </div>
