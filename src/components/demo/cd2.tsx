@@ -4,12 +4,12 @@ import FooterDemo from "./FooterDemo";
 import ModularSection from "./ModularDemo";
 import { DemoCommandBar, commandBrandColors } from "./DemoCommandBar";
 
-// Placeholder assets - replace with actual paths when assets are available
-const visualizationImage = "/placeholder-visualization.png";
-const emailVideo = "/placeholder-email.mp4";
-const leetcodeVideo = "/placeholder-leetcode.mp4";
-const redditVideo = "/placeholder-reddit.mp4";
-const spotifyVideo = "/placeholder-spotify.mp4";
+// Asset paths - Vite will handle these as static assets
+const visualizationImage = "/assets/visualization.png";
+const emailVideo = "/assets/videos/email.mp4";
+const leetcodeVideo = "/assets/videos/leetcode.mp4";
+const redditVideo = "/assets/videos/reddit.mp4";
+const spotifyVideo = "/assets/videos/spotify.mp4";
 
 const DemoHeader: React.FC = () => {
     const [isScrolled, setIsScrolled] = useState(false);
