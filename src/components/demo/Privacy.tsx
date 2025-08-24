@@ -425,9 +425,8 @@ const Privacy: React.FC = () => {
 
                     <div className="text-center mt-12 pt-8 border-t border-[var(--border)]">
                         <p className="text-[var(--muted-text)] text-sm max-w-2xl mx-auto">
-                            Privacy isn't just a policy for us—it's a core
-                            principle. LyncX is designed to be powerful while
-                            keeping your personal data personal.
+                            LyncX is designed to be powerful while keeping your
+                            personal data personal.
                         </p>
                     </div>
                 </div>

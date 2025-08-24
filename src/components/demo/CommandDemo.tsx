@@ -40,12 +40,6 @@ const DemoHeader: React.FC = () => {
                 {/* Desktop Navigation */}
                 <div className="hidden md:flex gap-10 items-center">
                     <a
-                        href="#features"
-                        className="text-sm font-medium text-[var(--muted-text)] hover:text-[var(--text)] transition-colors duration-200"
-                    >
-                        Features
-                    </a>
-                    <a
                         href="/privacy"
                         className="text-sm font-medium text-[var(--muted-text)] hover:text-[var(--text)] transition-colors duration-200"
                     >
@@ -91,13 +85,6 @@ const DemoHeader: React.FC = () => {
             {isMobileMenuOpen && (
                 <div className="md:hidden border-t border-[var(--border)] bg-[var(--bg)]/98 backdrop-blur-sm">
                     <div className="px-4 py-6 space-y-4">
-                        <a
-                            href="#features"
-                            className="block text-base font-medium text-[var(--muted-text)] hover:text-[var(--text)] transition-colors duration-200 py-2"
-                            onClick={() => setIsMobileMenuOpen(false)}
-                        >
-                            Features
-                        </a>
                         <a
                             href="/privacy"
                             className="block text-base font-medium text-[var(--muted-text)] hover:text-[var(--text)] transition-colors duration-200 py-2"
@@ -159,7 +146,6 @@ const DemoHero: React.FC<{
         gradient2: 30,
         gradient3: 60,
     });
-
 
     // Smart color conversion: extract RGBA from command brand colors
     const getSpotlightColor = () => {
