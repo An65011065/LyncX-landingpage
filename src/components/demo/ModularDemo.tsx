@@ -55,8 +55,17 @@ const DemoFlowModal: React.FC = () => {
 
             <style>{`
                 .flow-demo-container {
-                    width: 320px;
+                    width: 100%;
+                    max-width: 320px;
                     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+                }
+                
+                @media (max-width: 640px) {
+                    .flow-demo-container {
+                        max-width: 280px;
+                        margin: 0 auto;
+                        transform: scale(0.95);
+                    }
                 }
                 
                 .flow-demo-header {
@@ -284,7 +293,8 @@ const DemoNotepadModal: React.FC = () => {
 
             <style>{`
                 .notepad-demo-modal {
-                    width: 380px;
+                    width: 100%;
+                    max-width: 380px;
                     height: 500px;
                     background: rgba(255, 251, 235, 0.98);
                     backdrop-filter: blur(20px);
@@ -600,6 +610,7 @@ const DemoAnalyticsModal: React.FC = () => {
                     padding: 10px 14px;
                     box-shadow: 0 4px 12px rgba(160, 82, 45, 0.15);
                     min-width: 200px;
+                    max-width: 100%;
                 }
                 
                 .analytics-demo-icon {
@@ -690,7 +701,8 @@ const DemoLimitModal: React.FC = () => {
             <style>{`
                 .limit-demo-modal {
                     position: relative;
-                    width: 320px;
+                    width: 100%;
+                    max-width: 320px;
                     height: 400px;
                     background: rgba(255, 251, 235, 0.98);
                     backdrop-filter: blur(20px);
@@ -894,7 +906,8 @@ const DemoSpotifyPlayer: React.FC = () => {
                     border-radius: 14px;
                     padding: 16px;
                     box-shadow: 0 8px 24px rgba(160, 82, 45, 0.15);
-                    width: 320px;
+                    width: 100%;
+                    max-width: 320px;
                     display: flex;
                     flex-direction: column;
                     gap: 12px;
@@ -1175,7 +1188,8 @@ const DemoClipboardManager: React.FC = () => {
                 
                 .clipboard-demo-modal {
                     position: relative;
-                    width: 320px;
+                    width: 100%;
+                    max-width: 320px;
                     background: rgba(255, 251, 235, 0.98);
                     backdrop-filter: blur(20px);
                     border: 1px solid rgba(205, 133, 63, 0.35);
@@ -1443,6 +1457,24 @@ const DemoHoverNavbar: React.FC = () => {
                     gap: 8px;
                 }
                 
+                @media (max-width: 768px) {
+                    .hover-navbar-demo-container {
+                        width: 44px;
+                        max-height: 300px;
+                        padding: 12px 0;
+                        gap: 6px;
+                    }
+                    
+                    .hover-navbar-demo-item {
+                        width: 32px !important;
+                        height: 32px !important;
+                    }
+                    
+                    .demo-nav-icon {
+                        font-size: 14px !important;
+                    }
+                }
+                
                 .hover-navbar-demo-content {
                     display: flex;
                     flex-direction: column;
@@ -1488,13 +1520,31 @@ const ModularSection: React.FC = () => {
     const [visibleComponents, setVisibleComponents] = React.useState<
         Set<string>
     >(new Set());
+    const [showNavbar, setShowNavbar] = React.useState(false);
     const sectionRef = React.useRef<HTMLElement>(null);
 
     React.useEffect(() => {
+        const isMobile = window.innerWidth < 768;
         const observer = new IntersectionObserver(
             ([entry]) => {
+                console.log(
+                    "ModularDemo intersection:",
+                    entry.isIntersecting,
+                    "mobile:",
+                    isMobile,
+                );
                 setIsVisible(entry.isIntersecting);
                 if (entry.isIntersecting) {
+                    // Show navbar
+                    setShowNavbar(true);
+                    
+                    // Hide navbar after 1 second on mobile
+                    if (isMobile) {
+                        setTimeout(() => {
+                            console.log('Hiding navbar on mobile after 1 second');
+                            setShowNavbar(false);
+                        }, 1000);
+                    }
                     // Stagger component animations
                     const components = [
                         "flow",
@@ -1507,17 +1557,31 @@ const ModularSection: React.FC = () => {
                     ];
                     components.forEach((component, index) => {
                         setTimeout(() => {
-                            setVisibleComponents(
-                                (prev) => new Set([...prev, component]),
-                            );
-                        }, index * 200); // 200ms delay between each component
+                            setVisibleComponents((prev) => {
+                                const newSet = new Set([...prev, component]);
+                                console.log(
+                                    "Adding component:",
+                                    component,
+                                    "total visible:",
+                                    newSet.size,
+                                );
+                                return newSet;
+                            });
+                        }, index * (isMobile ? 100 : 200)); // Faster on mobile
                     });
+
                 } else {
                     // Reset animations when scrolling away
                     setVisibleComponents(new Set());
+                    setShowNavbar(false);
                 }
             },
-            { threshold: 0.3 },
+            {
+                threshold: isMobile ? 0.1 : 0.3,
+                rootMargin: isMobile
+                    ? "0px 0px -50px 0px"
+                    : "0px 0px -100px 0px",
+            },
         );
 
         if (sectionRef.current) {
@@ -1530,12 +1594,12 @@ const ModularSection: React.FC = () => {
     return (
         <section
             ref={sectionRef}
-            className="min-h-screen flex items-center justify-center relative bg-[var(--bg)] py-16"
+            className="min-h-screen flex items-center justify-center relative bg-[var(--bg)] py-8 sm:py-16"
         >
             {/* Hover Navbar - Positioned on far left, animated on scroll */}
             <div
                 className={`fixed left-0 top-1/2 transform -translate-y-1/2 z-10 transition-all duration-700 ease-out ${
-                    isVisible
+                    isVisible && showNavbar
                         ? "translate-x-0 opacity-100"
                         : "-translate-x-full opacity-0"
                 }`}
@@ -1543,22 +1607,29 @@ const ModularSection: React.FC = () => {
                 <DemoHoverNavbar />
             </div>
 
-            <div className="w-full max-w-7xl mx-auto px-8">
-                <div className="text-center mb-16">
-                    <h2 className="text-4xl md:text-5xl font-light mb-6 text-[var(--text)]">
+            <div className="w-full max-w-7xl mx-auto px-4 sm:px-8">
+                <div className="text-center mb-12 sm:mb-16">
+                    <h2 className="text-3xl sm:text-4xl md:text-5xl font-light mb-4 sm:mb-6 text-[var(--text)]">
                         Not a fan of{" "}
                         <span className="font-semibold text-[var(--accent-color)]">
                             typing?
                         </span>
                     </h2>
-                    <p className="text-xl text-[var(--muted-text)] max-w-3xl mx-auto leading-relaxed">
+                    <p className="text-lg sm:text-xl text-[var(--muted-text)] max-w-3xl mx-auto leading-relaxed px-4">
                         Use the sidebar to open tools on any website.
                     </p>
+                    {/* Debug info - remove after testing */}
+                    {process.env.NODE_ENV === "development" && (
+                        <div className="text-xs text-gray-500 mt-2">
+                            Visible: {isVisible.toString()} | Components:{" "}
+                            {visibleComponents.size}
+                        </div>
+                    )}
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-start">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 items-start">
                     {/* Left Column */}
-                    <div className="space-y-6 md:col-span-1 lg:col-span-1">
+                    <div className="space-y-6 lg:col-span-1">
                         <div className="text-center">
                             <h3 className="text-lg font-semibold text-[var(--text)] mb-4">
                                 Calendar & Notes
@@ -1567,7 +1638,7 @@ const ModularSection: React.FC = () => {
 
                         <div className="flex flex-col items-center space-y-6">
                             <div
-                                className={`transform scale-90 md:scale-100 transition-opacity duration-700 ${
+                                className={`w-full max-w-sm transition-opacity duration-700 ${
                                     visibleComponents.has("flow")
                                         ? "opacity-100"
                                         : "opacity-0"
@@ -1576,7 +1647,7 @@ const ModularSection: React.FC = () => {
                                 <DemoFlowModal />
                             </div>
                             <div
-                                className={`transform scale-90 md:scale-100 transition-opacity duration-700 ${
+                                className={`w-full max-w-sm transition-opacity duration-700 ${
                                     visibleComponents.has("notes")
                                         ? "opacity-100"
                                         : "opacity-0"
@@ -1588,16 +1659,16 @@ const ModularSection: React.FC = () => {
                     </div>
 
                     {/* Center Column */}
-                    <div className="space-y-6 md:col-span-1 lg:col-span-1">
+                    <div className="space-y-6 lg:col-span-1">
                         <div className="text-center">
                             <h3 className="text-lg font-semibold text-[var(--text)] mb-4">
                                 Quick Access
                             </h3>
                         </div>
 
-                        <div className="flex flex-col items-center space-y-8">
+                        <div className="flex flex-col items-center space-y-6 sm:space-y-8">
                             <div
-                                className={`transform scale-90 md:scale-100 transition-opacity duration-700 ${
+                                className={`w-full max-w-sm transition-opacity duration-700 ${
                                     visibleComponents.has("spotify")
                                         ? "opacity-100"
                                         : "opacity-0"
@@ -1605,7 +1676,7 @@ const ModularSection: React.FC = () => {
                             >
                                 <DemoSpotifyPlayer />
                             </div>
-                            <div className="space-y-4">
+                            <div className="space-y-4 w-full max-w-sm">
                                 <div
                                     className={`transition-opacity duration-700 ${
                                         visibleComponents.has("timebar")
@@ -1627,16 +1698,16 @@ const ModularSection: React.FC = () => {
                             </div>
 
                             {/* Descriptive Text Container - Always visible */}
-                            <div className="w-full max-w-sm mx-auto mt-8">
-                                <div className="text-center py-8 px-6 bg-gradient-to-br from-[var(--bg)] to-[rgba(255,251,235,0.5)] rounded-2xl border border-[rgba(205,133,63,0.2)]">
-                                    <h4 className="text-xl font-semibold text-[var(--text)] mb-3 leading-tight">
+                            <div className="w-full max-w-sm mx-auto mt-6 sm:mt-8">
+                                <div className="text-center py-6 sm:py-8 px-4 sm:px-6 bg-gradient-to-br from-[var(--bg)] to-[rgba(255,251,235,0.5)] rounded-2xl border border-[rgba(205,133,63,0.2)]">
+                                    <h4 className="text-lg sm:text-xl font-semibold text-[var(--text)] mb-3 leading-tight">
                                         Works on every website
                                     </h4>
                                     <p className="text-sm text-[var(--muted-text)] leading-relaxed">
                                         •
                                         <span className="font-medium text-[var(--accent-color)]">
                                             {" "}
-                                            Draggble
+                                            Draggable
                                         </span>{" "}
                                         •
                                         <span className="font-medium text-[var(--accent-color)]">
@@ -1646,7 +1717,7 @@ const ModularSection: React.FC = () => {
                                         •
                                         <span className="font-medium text-[var(--accent-color)]">
                                             {" "}
-                                            Unobstrusive
+                                            Unobtrusive
                                         </span>
                                     </p>
                                 </div>
@@ -1654,17 +1725,17 @@ const ModularSection: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Right Column - spans full width on mobile, single column on tablet+ */}
-                    <div className="space-y-6 md:col-span-2 lg:col-span-1">
+                    {/* Right Column */}
+                    <div className="space-y-6 lg:col-span-1">
                         <div className="text-center">
                             <h3 className="text-lg font-semibold text-[var(--text)] mb-4">
                                 Focus Tools
                             </h3>
                         </div>
 
-                        <div className="flex flex-col items-center space-y-14">
+                        <div className="flex flex-col items-center space-y-10 sm:space-y-14">
                             <div
-                                className={`transform scale-90 md:scale-100 transition-opacity duration-700 ${
+                                className={`w-full max-w-sm transition-opacity duration-700 ${
                                     visibleComponents.has("limit")
                                         ? "opacity-100"
                                         : "opacity-0"
@@ -1673,7 +1744,7 @@ const ModularSection: React.FC = () => {
                                 <DemoLimitModal />
                             </div>
                             <div
-                                className={`transform scale-90 md:scale-100 transition-opacity duration-700 ${
+                                className={`w-full max-w-sm transition-opacity duration-700 ${
                                     visibleComponents.has("clipboard")
                                         ? "opacity-100"
                                         : "opacity-0"
