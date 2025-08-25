@@ -169,8 +169,7 @@ const HelpSection: React.FC<{
                         </span>
                     </h2>
                     <p className="text-xl text-[var(--muted-text)] max-w-2xl mx-auto leading-relaxed">
-                        Press / to start typing any command. LyncX understands
-                        natural language and handles the rest.
+                        Press / to start typing any command. LyncX understands natural language and handles the rest.
                     </p>
                 </div>
 

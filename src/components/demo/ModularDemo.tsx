@@ -245,7 +245,7 @@ const DemoNotepadModal: React.FC = () => {
 
             <div className="notepad-demo-domain-header">
                 <div className="demo-domain-selector">
-                    <h2 className="demo-domain-title">mlu-explain.github.io</h2>
+                    <h2 className="demo-domain-title">Wikipedia</h2>
                     <div className="demo-domain-count">4 notes</div>
                 </div>
                 <div className="demo-status-indicator">
@@ -668,7 +668,7 @@ const DemoLimitModal: React.FC = () => {
                 <div className="limit-demo-header-icon">⏰</div>
                 <h1 className="limit-demo-modal-title">Daily Focus Time</h1>
                 <p className="limit-demo-modal-subtitle">
-                    Set a healthy limit for youtube.com
+                    Set a limit for youtube.com
                 </p>
             </div>
 
@@ -677,7 +677,7 @@ const DemoLimitModal: React.FC = () => {
                     <span className="limit-demo-value-number">2h</span>
                 </div>
                 <div className="limit-demo-value-description">
-                    You'll get a gentle reminder when you reach this limit
+                    You'll get a reminder when you reach this limit
                 </div>
             </div>
 
@@ -704,6 +704,7 @@ const DemoLimitModal: React.FC = () => {
                     width: 100%;
                     max-width: 320px;
                     height: 400px;
+                    margin: 0 auto;
                     background: rgba(255, 251, 235, 0.98);
                     backdrop-filter: blur(20px);
                     border: 1px solid rgba(205, 133, 63, 0.35);
@@ -896,6 +897,8 @@ const DemoSpotifyPlayer: React.FC = () => {
             <style>{`
                 .spotify-demo-container {
                     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+                    display: flex;
+                    justify-content: center;
                 }
                 
                 .spotify-demo-player {
@@ -1108,33 +1111,31 @@ const DemoClipboardManager: React.FC = () => {
     const clipboardItems = [
         {
             id: "1",
-            content:
-                'const handleClick = (event) => {\n  event.preventDefault();\n  console.log("Clicked!");\n};',
-            type: "code",
-            timestamp: "2m ago",
-            preview: "const handleClick = (event) => {...",
+            content: "clip16@rtrel.com",
+            type: "text",
+            timestamp: "",
+            preview: "clip16@rtel.com",
         },
         {
             id: "2",
-            content: "https://github.com/anthropics/claude-code/issues/42",
-            type: "url",
-            timestamp: "5m ago",
-            preview: "github.com/anthropics/claude-code/...",
+            content: "https://arxiv.org/abs/2508.15726",
+            type: "text",
+            timestamp: "",
+            preview: "https://arxiv.org/abs/2508.15726",
         },
         {
             id: "3",
-            content:
-                "Meeting notes: Discussed the new API endpoints for user authentication. Need to implement OAuth 2.0 flow.",
+            content: "rgba(255, 251, 235, 0.98)",
             type: "text",
-            timestamp: "12m ago",
-            preview: "Meeting notes: Discussed the new API...",
+            timestamp: "",
+            preview: "rgba(255, 251, 235, 0.98)",
         },
         {
             id: "4",
-            content: "npm install @types/react @types/node",
-            type: "command",
-            timestamp: "1h ago",
-            preview: "npm install @types/react @types/node",
+            content: "https://docs.google.com/spreadsheets/d/1abc123",
+            type: "text",
+            timestamp: "",
+            preview: "https://docs.google.com/spreadsheets/d/1abc123",
         },
     ];
 
@@ -1162,7 +1163,7 @@ const DemoClipboardManager: React.FC = () => {
                 </div>
 
                 <div className="clipboard-demo-items">
-                    {clipboardItems.slice(0, 3).map((item) => (
+                    {clipboardItems.map((item) => (
                         <div key={item.id} className="clipboard-demo-item">
                             <div className="clipboard-demo-preview">
                                 {item.preview}
@@ -1184,6 +1185,8 @@ const DemoClipboardManager: React.FC = () => {
             <style>{`
                 .clipboard-demo-container {
                     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+                    display: flex;
+                    justify-content: center;
                 }
                 
                 .clipboard-demo-modal {
@@ -1314,12 +1317,12 @@ const DemoClipboardManager: React.FC = () => {
                 
                 .clipboard-demo-items {
                     flex: 1;
-                    max-height: 240px;
+                    max-height: 160px;
                     overflow-y: auto;
                 }
                 
                 .clipboard-demo-item {
-                    padding: 8px 16px;
+                    padding: 2px 16px;
                     border-bottom: 1px solid rgba(205, 133, 63, 0.1);
                 }
                 
@@ -1328,12 +1331,12 @@ const DemoClipboardManager: React.FC = () => {
                 }
                 
                 .clipboard-demo-preview {
-                    font-size: 12px;
+                    font-size: 11px;
                     color: rgba(101, 67, 33, 0.8);
-                    line-height: 1.3;
+                    line-height: 1.2;
                     font-family: "SF Mono", Monaco, "Cascadia Code", monospace;
                     background: rgba(218, 165, 32, 0.08);
-                    padding: 6px 8px;
+                    padding: 4px 6px;
                     border-radius: 6px;
                     overflow: hidden;
                     text-overflow: ellipsis;
@@ -1537,11 +1540,13 @@ const ModularSection: React.FC = () => {
                 if (entry.isIntersecting) {
                     // Show navbar
                     setShowNavbar(true);
-                    
+
                     // Hide navbar after 1 second on mobile
                     if (isMobile) {
                         setTimeout(() => {
-                            console.log('Hiding navbar on mobile after 1 second');
+                            console.log(
+                                "Hiding navbar on mobile after 1 second",
+                            );
                             setShowNavbar(false);
                         }, 1000);
                     }
@@ -1569,7 +1574,6 @@ const ModularSection: React.FC = () => {
                             });
                         }, index * (isMobile ? 100 : 200)); // Faster on mobile
                     });
-
                 } else {
                     // Reset animations when scrolling away
                     setVisibleComponents(new Set());
@@ -1618,13 +1622,6 @@ const ModularSection: React.FC = () => {
                     <p className="text-lg sm:text-xl text-[var(--muted-text)] max-w-3xl mx-auto leading-relaxed px-4">
                         Use the sidebar to open tools on any website.
                     </p>
-                    {/* Debug info - remove after testing */}
-                    {process.env.NODE_ENV === "development" && (
-                        <div className="text-xs text-gray-500 mt-2">
-                            Visible: {isVisible.toString()} | Components:{" "}
-                            {visibleComponents.size}
-                        </div>
-                    )}
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 items-start">
@@ -1676,24 +1673,23 @@ const ModularSection: React.FC = () => {
                             >
                                 <DemoSpotifyPlayer />
                             </div>
-                            <div className="space-y-4 w-full max-w-sm">
-                                <div
-                                    className={`transition-opacity duration-700 ${
-                                        visibleComponents.has("timebar")
-                                            ? "opacity-100"
-                                            : "opacity-0"
-                                    }`}
-                                >
-                                    <DemoTimebar />
-                                </div>
-                                <div
-                                    className={`transition-opacity duration-700 ${
-                                        visibleComponents.has("analytics")
-                                            ? "opacity-100"
-                                            : "opacity-0"
-                                    }`}
-                                >
-                                    <DemoAnalyticsModal />
+                            <div className="space-y-6 w-full max-w-sm">
+                                <div>
+                                    <div className="text-center">
+                                        <h4 className="text-base font-semibold text-[var(--text)] mb-4">
+                                            Timers and Page Analytics
+                                        </h4>
+                                    </div>
+                                    <div
+                                        className={`transition-opacity duration-700 space-y-2 ${
+                                            visibleComponents.has("timebar")
+                                                ? "opacity-100"
+                                                : "opacity-0"
+                                        }`}
+                                    >
+                                        <DemoTimebar />
+                                        <DemoAnalyticsModal />
+                                    </div>
                                 </div>
                             </div>
 

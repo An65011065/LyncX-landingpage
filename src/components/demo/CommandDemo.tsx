@@ -361,7 +361,7 @@ const HelpSection: React.FC<{
     return (
         <section
             ref={helpSectionRef}
-            className="flex items-center justify-center pt-24 pb-44"
+            className="flex items-center justify-center pt-12 sm:pt-24 pb-12 sm:pb-44"
         >
             <div className="w-full max-w-6xl mx-auto px-8">
                 <div className="text-center mb-12">
@@ -372,8 +372,12 @@ const HelpSection: React.FC<{
                         </span>
                     </h2>
                     <p className="text-xl text-[var(--muted-text)] max-w-2xl mx-auto leading-relaxed">
-                        Press / to start typing any command. LyncX understands
-                        natural language and handles the rest.
+                        Press{" "}
+                        <span className="relative inline-block">
+                            <span className="text-[var(--text)] font-mono font-semibold">Cmd+Shift</span>
+                            <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-[var(--accent-color)]/40 rounded-full"></span>
+                        </span>{" "}
+                        to open command palette
                     </p>
                 </div>
 
@@ -488,7 +492,7 @@ const BrowserFrame: React.FC<{
         "reddit" | "leetcode" | "email" | "spotify" | "session" | "help"
     >("reddit");
 
-    const videoRef = useRef<HTMLVideoElement>(null);
+    const videoRefs = useRef<{[key: string]: HTMLVideoElement | null}>({});
 
     const videos = {
         reddit: redditVideo,
@@ -501,12 +505,21 @@ const BrowserFrame: React.FC<{
 
     // Control video playback based on scroll progress and video changes
     useEffect(() => {
-        const video = videoRef.current;
-        if (video) {
+        const currentVideo = videoRefs.current[activeVideo];
+        if (currentVideo) {
             if (scrollProgress >= 1) {
-                video.play().catch(console.error);
+                currentVideo.play().catch(console.error);
+                // Pause other videos
+                Object.entries(videoRefs.current).forEach(([key, video]) => {
+                    if (key !== activeVideo && video) {
+                        video.pause();
+                    }
+                });
             } else {
-                video.pause();
+                // Pause all videos when not in view
+                Object.values(videoRefs.current).forEach(video => {
+                    if (video) video.pause();
+                });
             }
         }
     }, [scrollProgress, activeVideo]);
@@ -520,21 +533,20 @@ const BrowserFrame: React.FC<{
                 >
                     {/* Video Content */}
                     <div className="absolute inset-0 bg-gray-900 rounded-xl sm:rounded-3xl overflow-hidden">
-                        <video
-                            ref={videoRef}
-                            key={activeVideo}
-                            className="w-full h-full object-cover"
-                            muted
-                            loop
-                            playsInline
-                            preload="metadata"
-                        >
-                            <source
-                                src={videos[activeVideo]}
-                                type="video/mp4"
+                        {Object.entries(videos).map(([key, src]) => (
+                            <video
+                                key={key}
+                                ref={(el) => (videoRefs.current[key] = el)}
+                                className={`w-full h-full object-cover absolute inset-0 transition-opacity duration-300 ${
+                                    activeVideo === key ? "opacity-100" : "opacity-0"
+                                }`}
+                                muted
+                                loop
+                                playsInline
+                                preload="auto"
+                                src={src}
                             />
-                            Your browser does not support the video tag.
-                        </video>
+                        ))}
                     </div>
                 </div>
 
@@ -550,10 +562,10 @@ const BrowserFrame: React.FC<{
                                         videoKey as keyof typeof videos,
                                     )
                                 }
-                                className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-mono font-medium transition-all duration-200 ${
+                                className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-mono font-medium transition-all duration-200 cursor-pointer ${
                                     activeVideo === videoKey
-                                        ? "bg-[var(--accent-color)] text-white shadow-md"
-                                        : "bg-white/20 backdrop-blur-sm text-[var(--text)] hover:bg-white/30 hover:shadow-sm"
+                                        ? "bg-[var(--accent-color)] text-white border border-[var(--accent-color)]"
+                                        : "border border-[var(--accent-color)] text-[var(--accent-color)] hover:bg-[var(--accent-color)] hover:text-white"
                                 }`}
                             >
                                 {videoKey}
@@ -572,10 +584,10 @@ const BrowserFrame: React.FC<{
                                             videoKey as keyof typeof videos,
                                         )
                                     }
-                                    className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-mono font-medium transition-all duration-200 ${
+                                    className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-mono font-medium transition-all duration-200 cursor-pointer ${
                                         activeVideo === videoKey
-                                            ? "bg-[var(--accent-color)] text-white shadow-md"
-                                            : "bg-white/20 backdrop-blur-sm text-[var(--text)] hover:bg-white/30 hover:shadow-sm"
+                                            ? "bg-[var(--accent-color)] text-white border border-[var(--accent-color)]"
+                                            : "border border-[var(--accent-color)] text-[var(--accent-color)] hover:bg-[var(--accent-color)] hover:text-white"
                                     }`}
                                 >
                                     /{videoKey}
@@ -969,7 +981,7 @@ const TransitionText: React.FC<{
     return (
         <section
             ref={transitionTextRef}
-            className="py-12 flex items-center justify-center relative overflow-hidden"
+            className="py-6 sm:py-12 flex items-center justify-center relative overflow-hidden"
         >
             <div className="w-full max-w-4xl mx-auto px-8 text-center">
                 <p className="transition-text text-2xl md:text-3xl font-light leading-relaxed text-[var(--text)]">

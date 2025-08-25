@@ -18,14 +18,14 @@ const FAQDemo: React.FC = () => {
         },
         {
             question: "Is my browsing private with LyncX?",
-            answer: "Yes, your browsing history never leaves your browser. Everything stays completely private on your device. We believe your data should remain yours.",
+            answer: "Yes, your browsing history never leaves your browser. Everything stays completely private on your device.",
             subQuestion: "How does AI analyze the data then?",
             subAnswer:
                 "The AI simply picks the most appropriate function for what you're trying to do. All analysis and calculations happen locally on your computer - nothing is sent to our servers.",
         },
         {
             question: "Can I turn off data features?",
-            answer: "Absolutely! LyncX is completely modular. Through the settings, you can turn data features off.",
+            answer: "Absolutely! LyncX is completely modular. You can turn data features off in the settings.",
         },
         {
             question: "Can I download my data?",
@@ -42,29 +42,29 @@ const FAQDemo: React.FC = () => {
     ];
 
     return (
-        <section className="pt-24 pb-0 bg-[var(--bg)]">
-            <div className="max-w-4xl mx-auto px-8">
+        <section className="pt-8 sm:pt-24 pb-0 bg-[var(--bg)]">
+            <div className="max-w-4xl mx-auto px-4 sm:px-8">
                 {/* Header */}
-                <div className="text-center mb-16">
-                    <h2 className="text-5xl font-semibold tracking-tight mb-6 text-[var(--text)]">
+                <div className="text-center mb-8 sm:mb-16">
+                    <h2 className="text-3xl sm:text-5xl font-semibold tracking-tight mb-6 text-[var(--text)]">
                         Frequently asked questions
                     </h2>
                 </div>
 
                 {/* FAQ Items */}
-                <div className="mb-16">
+                <div className="mb-8 sm:mb-16">
                     {faqs.map((faq, index) => (
                         <div
                             key={index}
                             className="border-b border-[var(--border)] last:border-b-0"
                         >
                             <button
-                                className="w-full py-6 text-left flex items-center justify-between hover:opacity-70 transition-opacity"
+                                className="w-full py-4 sm:py-6 text-left flex items-center justify-between hover:opacity-70 transition-opacity"
                                 onClick={() =>
                                     setOpenFAQ(openFAQ === index ? null : index)
                                 }
                             >
-                                <h3 className="text-xl font-medium text-[var(--text)] pr-4">
+                                <h3 className="text-lg sm:text-xl font-medium text-[var(--text)] pr-4">
                                     {faq.question}
                                 </h3>
                                 <ChevronDown
@@ -77,19 +77,19 @@ const FAQDemo: React.FC = () => {
                             <div
                                 className={`overflow-hidden transition-all duration-300 ease-in-out ${
                                     openFAQ === index
-                                        ? "max-h-60 opacity-100 pb-6"
+                                        ? "max-h-96 opacity-100 pb-4 sm:pb-6"
                                         : "max-h-0 opacity-0"
                                 }`}
                             >
                                 <div>
                                     <p
-                                        className="text-[var(--muted-text)] leading-relaxed mb-4 font-medium whitespace-pre-line"
+                                        className="text-[var(--muted-text)] leading-relaxed mb-1 text-sm font-medium whitespace-pre-line"
                                         style={{ fontFamily: "system-ui" }}
                                     >
                                         {faq.answer}
                                     </p>
                                     {faq.subQuestion && (
-                                        <div className="mt-4 pt-4 border-t border-[var(--border)]">
+                                        <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-[var(--border)]">
                                             <p className="text-sm font-semibold text-[var(--text)] mb-2">
                                                 {faq.subQuestion}
                                             </p>
