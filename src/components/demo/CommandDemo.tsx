@@ -374,10 +374,12 @@ const HelpSection: React.FC<{
                     <p className="text-xl text-[var(--muted-text)] max-w-2xl mx-auto leading-relaxed">
                         Press{" "}
                         <span className="relative inline-block">
-                            <span className="text-[var(--text)] font-mono font-semibold">Cmd+Shift</span>
+                            <span className="text-[var(--text)] font-mono font-semibold">
+                                Cmd+Cmd
+                            </span>
                             <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-[var(--accent-color)]/40 rounded-full"></span>
                         </span>{" "}
-                        to open command palette
+                        to open command bar
                     </p>
                 </div>
 
@@ -492,7 +494,7 @@ const BrowserFrame: React.FC<{
         "reddit" | "leetcode" | "email" | "spotify" | "session" | "help"
     >("reddit");
 
-    const videoRefs = useRef<{[key: string]: HTMLVideoElement | null}>({});
+    const videoRefs = useRef<{ [key: string]: HTMLVideoElement | null }>({});
 
     const videos = {
         reddit: redditVideo,
@@ -517,7 +519,7 @@ const BrowserFrame: React.FC<{
                 });
             } else {
                 // Pause all videos when not in view
-                Object.values(videoRefs.current).forEach(video => {
+                Object.values(videoRefs.current).forEach((video) => {
                     if (video) video.pause();
                 });
             }
@@ -538,7 +540,9 @@ const BrowserFrame: React.FC<{
                                 key={key}
                                 ref={(el) => (videoRefs.current[key] = el)}
                                 className={`w-full h-full object-cover absolute inset-0 transition-opacity duration-300 ${
-                                    activeVideo === key ? "opacity-100" : "opacity-0"
+                                    activeVideo === key
+                                        ? "opacity-100"
+                                        : "opacity-0"
                                 }`}
                                 muted
                                 loop
