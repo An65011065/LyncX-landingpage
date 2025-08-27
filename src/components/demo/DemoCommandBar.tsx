@@ -12,7 +12,6 @@ interface DemoCommandBarProps {
 const commands = [
     "todo call Ciro @3pm",
     "slack #front-end check out this implementation!",
-    "spotify play Dakiti",
     "gmail sara@gmail.com quick coffee tomorrow?",
     "chat is this relevant to the new feature?",
     "remember quarterly metrics data for meeting",
@@ -23,7 +22,6 @@ const commands = [
 export const commandBrandColors = [
     "rgba(255, 165, 0, 0.5)", // Todo Orange
     "rgba(112, 66, 192, 0.7)", // Slack Purple
-    "rgba(30, 215, 96, 0.6)", // Spotify Green
     "rgba(66, 133, 244, 0.5)", // Gmail Blue
     "rgba(0, 172, 193,0.6)", // Chat Teal
     "rgba(255, 193, 7, 0.6)", // Remember Yellow

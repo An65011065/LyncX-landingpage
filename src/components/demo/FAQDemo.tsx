@@ -14,7 +14,7 @@ const FAQDemo: React.FC = () => {
     const faqs: FAQItem[] = [
         {
             question: "How does LyncX work?",
-            answer: "Simply type '/' on any tab to bring up the command bar. Then type what you want to do - like 'note' for adding notes to a website, 'history' to find past pages, or 'spotify' to play music.",
+            answer: "Simply type '/' on any tab to bring up the command bar. Then type what you want to do - like 'note' for adding notes to a website, 'history' to find past pages, or 'timer' to set focus timers.",
         },
         {
             question: "Is my browsing private with LyncX?",

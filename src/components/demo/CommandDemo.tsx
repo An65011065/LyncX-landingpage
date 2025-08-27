@@ -9,7 +9,6 @@ const visualizationImage = "/assets/visualization.png";
 const emailVideo = "/assets/videos/email.mp4";
 const leetcodeVideo = "/assets/videos/leetcode.mp4";
 const redditVideo = "/assets/videos/reddit.mp4";
-const spotifyVideo = "/assets/videos/spotify.mp4";
 const sessionVideo = "/assets/videos/session.mp4";
 const helpVideo = "/assets/videos/help.mp4";
 
@@ -331,7 +330,6 @@ const HelpSection: React.FC<{
         return () => window.removeEventListener("scroll", handleScroll);
     }, [helpSectionRef]);
     const commands = [
-        "/spotify",
         "/gmail",
         "/slack",
         "/todo",
@@ -491,7 +489,7 @@ const BrowserFrame: React.FC<{
     scrollProgress: number;
 }> = ({ browserRef, scrollProgress }) => {
     const [activeVideo, setActiveVideo] = useState<
-        "reddit" | "leetcode" | "email" | "spotify" | "session" | "help"
+        "reddit" | "leetcode" | "email" | "session" | "help"
     >("reddit");
 
     const videoRefs = useRef<{ [key: string]: HTMLVideoElement | null }>({});
@@ -500,7 +498,6 @@ const BrowserFrame: React.FC<{
         reddit: redditVideo,
         leetcode: leetcodeVideo,
         email: emailVideo,
-        spotify: spotifyVideo,
         session: sessionVideo,
         help: helpVideo,
     };
@@ -577,9 +574,9 @@ const BrowserFrame: React.FC<{
                         ))}
                     </div>
 
-                    {/* Command buttons (session, spotify, email, help) */}
+                    {/* Command buttons (session, email, help) */}
                     <div className="flex flex-wrap justify-center gap-2">
-                        {["session", "spotify", "email", "help"].map(
+                        {["session", "email", "help"].map(
                             (videoKey) => (
                                 <button
                                     key={videoKey}
