@@ -340,6 +340,7 @@ const HelpSection: React.FC<{
         "/remember",
         "/recall",
         "/ss",
+        "/yt",
         "/chat",
         "/lyncx",
         "/visualize",
@@ -576,25 +577,23 @@ const BrowserFrame: React.FC<{
 
                     {/* Command buttons (session, email, help) */}
                     <div className="flex flex-wrap justify-center gap-2">
-                        {["session", "email", "help"].map(
-                            (videoKey) => (
-                                <button
-                                    key={videoKey}
-                                    onClick={() =>
-                                        setActiveVideo(
-                                            videoKey as keyof typeof videos,
-                                        )
-                                    }
-                                    className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-mono font-medium transition-all duration-200 cursor-pointer ${
-                                        activeVideo === videoKey
-                                            ? "bg-[var(--accent-color)] text-white border border-[var(--accent-color)]"
-                                            : "border border-[var(--accent-color)] text-[var(--accent-color)] hover:bg-[var(--accent-color)] hover:text-white"
-                                    }`}
-                                >
-                                    /{videoKey}
-                                </button>
-                            ),
-                        )}
+                        {["session", "email", "help"].map((videoKey) => (
+                            <button
+                                key={videoKey}
+                                onClick={() =>
+                                    setActiveVideo(
+                                        videoKey as keyof typeof videos,
+                                    )
+                                }
+                                className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-mono font-medium transition-all duration-200 cursor-pointer ${
+                                    activeVideo === videoKey
+                                        ? "bg-[var(--accent-color)] text-white border border-[var(--accent-color)]"
+                                        : "border border-[var(--accent-color)] text-[var(--accent-color)] hover:bg-[var(--accent-color)] hover:text-white"
+                                }`}
+                            >
+                                /{videoKey}
+                            </button>
+                        ))}
                     </div>
                 </div>
             </div>
