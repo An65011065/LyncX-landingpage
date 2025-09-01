@@ -87,13 +87,7 @@ export default function AuthPage() {
             };
 
             localStorage.setItem('lyncx_extension_auth', JSON.stringify(authData));
-            console.log("✅ Auth data stored in localStorage");
-
-            // Also dispatch custom event as backup
-            window.dispatchEvent(new CustomEvent('extensionAuthSuccess', {
-                detail: authData
-            }));
-            console.log("✅ Custom event dispatched");
+            console.log("✅ Auth data stored in localStorage for extension");
 
             // Show success message briefly before closing
             setTimeout(() => {
