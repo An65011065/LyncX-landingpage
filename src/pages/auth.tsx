@@ -37,23 +37,14 @@ export default function AuthPage() {
         // Check URL params for extension auth
         const urlParams = new URLSearchParams(location.search);
         const source = urlParams.get("source");
-        const redirect_uri = urlParams.get("redirect_uri");
 
         const isFromExtension = source === "extension";
         setIsExtensionAuth(isFromExtension);
 
         console.log("🔍 Auth page params:", {
             source,
-            redirect_uri,
             isFromExtension,
         });
-
-        // Validate extension auth requirements
-        if (isFromExtension && !redirect_uri) {
-            console.error("❌ Extension auth missing redirect_uri parameter");
-            setError("Invalid extension authentication request");
-            return;
-        }
 
         // Listen for auth state changes
         const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -61,8 +52,8 @@ export default function AuthPage() {
                 console.log("✅ User signed in:", user.email);
 
                 if (isFromExtension) {
-                    // Extension auth - generate JWT and redirect
-                    notifyExtensionSuccess(user, redirect_uri!);
+                    // Extension auth - send postMessage to extension
+                    notifyExtensionSuccess(user);
                 } else {
                     // Regular web auth - redirect to dashboard or home
                     window.location.href = "/";
@@ -73,70 +64,67 @@ export default function AuthPage() {
         return () => unsubscribe();
     }, [location, authComplete]);
 
-    const notifyExtensionSuccess = async (user: any, redirectUri: string) => {
-        alert("🚨 notifyExtensionSuccess called!"); // DEBUG ALERT
-
-        console.log("✅ Extension auth successful, generating JWT token...");
+    const notifyExtensionSuccess = async (user: any) => {
+        console.log("✅ Extension auth successful, sending postMessage...");
         setAuthComplete(true);
 
         try {
-            // STEP 1: Call your backend to generate JWT token
-            console.log("🔄 Calling backend to generate JWT token...");
+            // Send postMessage to extension tab with user data
+            const userData = {
+                uid: user.uid,
+                email: user.email,
+                displayName: user.displayName,
+                photoURL: user.photoURL,
+            };
 
-            const response = await fetch(
-                "https://lyncx-server.vercel.app/api/auth/generate-token",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        uid: user.uid,
-                        email: user.email,
-                        displayName: user.displayName,
-                        photoURL: user.photoURL,
-                    }),
-                },
-            );
+            console.log("🔄 Sending message to extension via content script:", userData);
 
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                alert(`❌ Backend failed: ${response.status}`); // DEBUG ALERT
-                throw new Error(
-                    errorData.error ||
-                        `Token generation failed: ${response.status}`,
-                );
+            // Check if Chrome extension APIs are available (only in extensions)
+            if (typeof (window as any).chrome !== 'undefined' && 
+                (window as any).chrome.runtime && 
+                (window as any).chrome.runtime.sendMessage) {
+                // Send message directly to extension background
+                (window as any).chrome.runtime.sendMessage({
+                    type: 'EXTENSION_AUTH_SUCCESS',
+                    user: userData
+                }, () => {
+                    console.log("✅ Message sent to extension successfully");
+                });
+            } else {
+                // Fallback: dispatch custom event that content script can listen to
+                window.dispatchEvent(new CustomEvent('extensionAuthSuccess', {
+                    detail: {
+                        type: 'EXTENSION_AUTH_SUCCESS',
+                        user: userData
+                    }
+                }));
+                console.log("✅ Custom event dispatched");
             }
-
-            const { token } = await response.json();
-
-            if (!token) {
-                alert("❌ No token received from server!"); // DEBUG ALERT
-                throw new Error("No token received from server");
-            }
-
-            alert("✅ JWT token received, redirecting..."); // DEBUG ALERT
-
-            // STEP 2: Build redirect URL with user data AND JWT token
-            const successUrl = new URL(redirectUri);
-            successUrl.searchParams.set("uid", user.uid);
-            successUrl.searchParams.set("email", user.email || "");
-            successUrl.searchParams.set("displayName", user.displayName || "");
-            successUrl.searchParams.set("photoURL", user.photoURL || "");
-            successUrl.searchParams.set("token", token); // 🔑 JWT TOKEN!
-            successUrl.searchParams.set("timestamp", Date.now().toString());
-
-            console.log("🔄 Redirecting to extension with JWT token");
-
-            // STEP 3: Redirect to Chrome's special URL - Chrome will intercept this
-            window.location.href = successUrl.toString();
+            
+            // Close this tab after a brief delay
+            setTimeout(() => {
+                window.close();
+            }, 1500);
         } catch (error) {
-            alert(
-                `❌ Error: ${
-                    error instanceof Error ? error.message : "Unknown error"
-                }`,
-            ); // DEBUG ALERT
-            console.error("❌ Error during JWT token generation:", error);
+            console.error("❌ Error during extension message:", error);
+            
+            // Send error message
+            if (typeof (window as any).chrome !== 'undefined' && 
+                (window as any).chrome.runtime && 
+                (window as any).chrome.runtime.sendMessage) {
+                (window as any).chrome.runtime.sendMessage({
+                    type: 'EXTENSION_AUTH_ERROR',
+                    error: error instanceof Error ? error.message : "Unknown error"
+                });
+            } else {
+                window.dispatchEvent(new CustomEvent('extensionAuthError', {
+                    detail: {
+                        type: 'EXTENSION_AUTH_ERROR',
+                        error: error instanceof Error ? error.message : "Unknown error"
+                    }
+                }));
+            }
+            
             setError(
                 `Authentication failed: ${
                     error instanceof Error ? error.message : "Unknown error"
