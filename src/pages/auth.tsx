@@ -77,34 +77,28 @@ export default function AuthPage() {
                 photoURL: user.photoURL,
             };
 
-            console.log("🔄 Sending message to extension via content script:", userData);
+            console.log("🔄 Sending message to extension via localStorage:", userData);
 
-            // Check if Chrome extension APIs are available (only in extensions)
-            if (typeof (window as any).chrome !== 'undefined' && 
-                (window as any).chrome.runtime && 
-                (window as any).chrome.runtime.sendMessage) {
-                // Send message directly to extension background
-                (window as any).chrome.runtime.sendMessage({
-                    type: 'EXTENSION_AUTH_SUCCESS',
-                    user: userData
-                }, () => {
-                    console.log("✅ Message sent to extension successfully");
-                });
-            } else {
-                // Fallback: dispatch custom event that content script can listen to
-                window.dispatchEvent(new CustomEvent('extensionAuthSuccess', {
-                    detail: {
-                        type: 'EXTENSION_AUTH_SUCCESS',
-                        user: userData
-                    }
-                }));
-                console.log("✅ Custom event dispatched");
-            }
-            
-            // Close this tab after a brief delay
+            // Store auth data in localStorage for extension to pick up
+            const authData = {
+                type: 'EXTENSION_AUTH_SUCCESS',
+                user: userData,
+                timestamp: Date.now()
+            };
+
+            localStorage.setItem('lyncx_extension_auth', JSON.stringify(authData));
+            console.log("✅ Auth data stored in localStorage");
+
+            // Also dispatch custom event as backup
+            window.dispatchEvent(new CustomEvent('extensionAuthSuccess', {
+                detail: authData
+            }));
+            console.log("✅ Custom event dispatched");
+
+            // Show success message briefly before closing
             setTimeout(() => {
                 window.close();
-            }, 1500);
+            }, 2000);
         } catch (error) {
             console.error("❌ Error during extension message:", error);
             
