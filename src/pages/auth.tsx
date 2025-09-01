@@ -19,6 +19,9 @@ const firebaseConfig = {
     measurementId: "G-ZEQRBXMSSB",
 };
 
+// Web Application OAuth Client ID (for universal browser compatibility)
+const WEB_OAUTH_CLIENT_ID = "606602321768-s9h4rdbjtieqnc3lh411h0v15q30kjq5.apps.googleusercontent.com";
+
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
@@ -149,6 +152,9 @@ export default function AuthPage() {
 
         try {
             const provider = new GoogleAuthProvider();
+            provider.setCustomParameters({
+                client_id: WEB_OAUTH_CLIENT_ID
+            });
             provider.addScope("email");
             provider.addScope("profile");
 
