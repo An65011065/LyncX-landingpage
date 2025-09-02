@@ -76,7 +76,7 @@ export default function AuthPage() {
 
                 if (isFromExtension) {
                     // Extension auth - send postMessage to extension
-                    notifyExtensionSuccess(user, accessToken);
+                    notifyExtensionSuccess(user, currentAccessToken);
                 } else {
                     // Regular web auth - redirect to dashboard or home
                     window.location.href = "/";
@@ -93,7 +93,7 @@ export default function AuthPage() {
             console.log("🔄 Processing OAuth callback...");
             console.log("✅ Got access token and ID token from OAuth");
             
-            setAccessToken(accessToken);
+            setCurrentAccessToken(accessToken);
 
             // Sign in to Firebase with ID token
             const credential = GoogleAuthProvider.credential(idToken);
