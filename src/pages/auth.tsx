@@ -96,23 +96,41 @@ export default function AuthPage() {
 
     const handleOAuthCallback = async (accessToken: string, idToken: string) => {
         setLoading(true);
+        console.log("🔄 Processing OAuth callback...");
+        console.log("✅ Got access token and ID token from OAuth");
+        
         try {
-            console.log("🔄 Processing OAuth callback...");
-            console.log("✅ Got access token and ID token from OAuth");
-            
-            setCurrentAccessToken(accessToken);
-
-            // Sign in to Firebase with ID token
+            // Sign in to Firebase with ID token to get user info
             const credential = GoogleAuthProvider.credential(idToken);
             const firebaseResult = await signInWithCredential(auth, credential);
             console.log("✅ Firebase sign-in successful:", firebaseResult.user.email);
 
-            // For extension auth, immediately notify with the access token
-            if (isExtensionAuth) {
-                console.log("🔄 About to notify extension success...");
-                await notifyExtensionSuccess(firebaseResult.user, accessToken);
-                console.log("✅ Extension notification completed");
-            }
+            // ALWAYS store OAuth data when we have tokens - no conditions!
+            const authData = {
+                user: {
+                    uid: firebaseResult.user.uid,
+                    email: firebaseResult.user.email,
+                    displayName: firebaseResult.user.displayName,
+                    photoURL: firebaseResult.user.photoURL
+                },
+                accessToken: accessToken,
+                timestamp: Date.now()
+            };
+
+            console.log("🔄 Storing OAuth data immediately...");
+            localStorage.setItem('lyncx_oauth_complete', JSON.stringify(authData));
+            localStorage.setItem('lyncx_should_redirect', 'true');
+            console.log("✅ OAuth data stored successfully");
+
+            // Dispatch event immediately 
+            window.dispatchEvent(new CustomEvent('lyncx_auth_complete', { detail: authData }));
+            console.log("✅ Event dispatched");
+
+            // Open extension tab directly with your extension ID
+            console.log("🔄 Opening extension tab...");
+            const extensionUrl = `chrome-extension://lljcelbdgpjianpjkpdckkmgkbfhoccj/src/landing/landing.html`;
+            window.open(extensionUrl, '_blank');
+            console.log("✅ Extension tab opened");
 
             // Clear hash from URL
             window.history.replaceState(null, '', window.location.pathname + window.location.search);
@@ -126,85 +144,6 @@ export default function AuthPage() {
         }
     };
 
-    const notifyExtensionSuccess = async (user: any, token: string | null) => {
-        console.log("✅ Extension auth successful, preparing redirect...");
-        console.log("🔄 Setting authComplete to true...");
-        setAuthComplete(true);
-
-        try {
-            // Send postMessage to extension tab with user data and access token
-            const userData = {
-                uid: user.uid,
-                email: user.email,
-                displayName: user.displayName,
-                photoURL: user.photoURL,
-            };
-
-            console.log("🔄 Storing auth data for extension transfer:", userData);
-            console.log("🔑 Including access token:", token ? 'YES' : 'NO');
-            console.log("🔑 Token preview:", token ? token.substring(0, 30) + '...' : 'NULL');
-
-            // Store auth data in localStorage for extension to pick up
-            const authData = {
-                type: 'EXTENSION_AUTH_SUCCESS',
-                user: userData,
-                accessToken: token,
-                timestamp: Date.now()
-            };
-
-            console.log("🔄 Storing auth data in localStorage...");
-            localStorage.setItem('lyncx_extension_auth', JSON.stringify(authData));
-            console.log("✅ Auth data stored in localStorage for extension");
-
-            // Add a flag to indicate this page should redirect
-            localStorage.setItem('lyncx_should_redirect', 'true');
-
-            // Show success message briefly before triggering extension opening
-            console.log("🔄 Setting timeout to trigger extension opening...");
-            setTimeout(() => {
-                console.log("🔄 Triggering extension to open landing page...");
-                // Try to open the extension landing page in a new tab
-                // This will be handled by content script detecting the localStorage data
-                window.dispatchEvent(new CustomEvent('lyncx_auth_complete', {
-                    detail: authData
-                }));
-                
-                // Alternative: Try to create a new tab to the extension
-                try {
-                    // If running in Chrome, try to open extension landing
-                    const newTab = window.open('chrome://newtab/', '_blank');
-                    if (newTab) {
-                        console.log("✅ Opened new tab, extension should detect auth data");
-                        // Close this tab after a short delay
-                        setTimeout(() => {
-                            window.close(); // This might work for some scenarios
-                        }, 1000);
-                    }
-                } catch (error) {
-                    console.log("⚠️ Could not open new tab, content script should handle this");
-                    // Reload this page which should be handled by content script
-                    window.location.reload();
-                }
-            }, 1500);
-        } catch (error) {
-            console.error("❌ Error during extension auth completion:", error);
-            
-            // Send error message via custom event
-            window.dispatchEvent(new CustomEvent('extensionAuthError', {
-                detail: {
-                    type: 'EXTENSION_AUTH_ERROR',
-                    error: error instanceof Error ? error.message : "Unknown error"
-                }
-            }));
-            
-            setError(
-                `Authentication failed: ${
-                    error instanceof Error ? error.message : "Unknown error"
-                }`,
-            );
-            setAuthComplete(false); // Allow retry
-        }
-    };
 
 
     const handleSignIn = async () => {
