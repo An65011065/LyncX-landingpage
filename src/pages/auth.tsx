@@ -29,8 +29,6 @@ export default function AuthPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isExtensionAuth, setIsExtensionAuth] = useState(false);
-    const [authComplete, setAuthComplete] = useState(false);
-    const [currentAccessToken, setCurrentAccessToken] = useState<string | null>(null);
 
     const location = useLocation();
 
@@ -75,24 +73,18 @@ export default function AuthPage() {
 
         // Listen for auth state changes
         const unsubscribe = onAuthStateChanged(auth, (user) => {
-            if (user && !authComplete) {
+            if (user) {
                 console.log("✅ User signed in:", user.email);
 
-                if (isFromExtension) {
-                    // Extension auth - only notify if not already done in handleOAuthCallback
-                    if (!window.location.hash.includes('access_token')) {
-                        // This is likely from regular Firebase auth, not OAuth callback
-                        notifyExtensionSuccess(user, currentAccessToken);
-                    }
-                } else {
-                    // Regular web auth - redirect to dashboard or home
+                // Just redirect to home for any regular auth that's not OAuth callback
+                if (!window.location.hash.includes('access_token') && !isExtensionAuth) {
                     window.location.href = "/";
                 }
             }
         });
 
         return () => unsubscribe();
-    }, [location, authComplete]);
+    }, [location, isExtensionAuth]);
 
     const handleOAuthCallback = async (accessToken: string, idToken: string) => {
         setLoading(true);
@@ -205,25 +197,6 @@ export default function AuthPage() {
         }
     };
 
-    // Show success screen after auth (this will be brief before redirect)
-    if (authComplete && isExtensionAuth) {
-        return (
-            <div className="min-h-screen bg-gradient-to-br from-green-600 to-blue-700 flex items-center justify-center">
-                <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl text-center">
-                    <div className="text-6xl mb-4">✅</div>
-                    <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                        Authentication Successful!
-                    </h1>
-                    <p className="text-gray-600 mb-4">
-                        Generating secure token and redirecting...
-                    </p>
-                    <div className="text-sm text-gray-500">
-                        <div className="w-5 h-5 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin mx-auto"></div>
-                    </div>
-                </div>
-            </div>
-        );
-    }
 
     // Extension auth UI
     if (isExtensionAuth) {
