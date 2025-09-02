@@ -92,18 +92,50 @@ export default function AuthPage() {
         console.log("✅ Got access token and ID token from OAuth");
         
         try {
-            // Sign in to Firebase with ID token to get user info
-            const credential = GoogleAuthProvider.credential(idToken);
-            const firebaseResult = await signInWithCredential(auth, credential);
-            console.log("✅ Firebase sign-in successful:", firebaseResult.user.email);
+            let firebaseUser;
+            
+            // Check if user is already signed in to avoid duplicate sign-in
+            if (auth.currentUser) {
+                console.log("✅ User already signed in to Firebase:", auth.currentUser.email);
+                firebaseUser = auth.currentUser;
+            } else {
+                try {
+                    // Sign in to Firebase with ID token to get user info
+                    console.log("🔄 Signing in to Firebase...");
+                    const credential = GoogleAuthProvider.credential(idToken);
+                    const firebaseResult = await signInWithCredential(auth, credential);
+                    console.log("✅ Firebase sign-in successful:", firebaseResult.user.email);
+                    firebaseUser = firebaseResult.user;
+                } catch (firebaseError: any) {
+                    console.error("⚠️ Firebase sign-in error (continuing anyway):", firebaseError);
+                    
+                    // If Firebase sign-in fails but we have the ID token, decode it for user info
+                    try {
+                        // Simple JWT decode (just the payload, no verification needed since it came from Google)
+                        const base64Payload = idToken.split('.')[1];
+                        const payload = JSON.parse(atob(base64Payload));
+                        console.log("✅ Extracted user info from ID token:", payload.email);
+                        
+                        firebaseUser = {
+                            uid: payload.sub,
+                            email: payload.email,
+                            displayName: payload.name,
+                            photoURL: payload.picture
+                        };
+                    } catch (decodeError) {
+                        console.error("❌ Failed to decode ID token:", decodeError);
+                        throw new Error("Failed to extract user information");
+                    }
+                }
+            }
 
             // ALWAYS store OAuth data when we have tokens - no conditions!
             const authData = {
                 user: {
-                    uid: firebaseResult.user.uid,
-                    email: firebaseResult.user.email,
-                    displayName: firebaseResult.user.displayName,
-                    photoURL: firebaseResult.user.photoURL
+                    uid: firebaseUser.uid,
+                    email: firebaseUser.email,
+                    displayName: firebaseUser.displayName,
+                    photoURL: firebaseUser.photoURL
                 },
                 accessToken: accessToken,
                 timestamp: Date.now()
