@@ -11,7 +11,7 @@ import {
 
 const firebaseConfig = {
     apiKey: "AIzaSyAlQbwqFDB0XMZv8du485VBsqVxU3S-vpY",
-    authDomain: "linkx-b2c62.firebaseapp.com",
+    authDomain: "lyncx.ai",
     projectId: "linkx-b2c62",
     storageBucket: "linkx-b2c62.firebasestorage.app",
     messagingSenderId: "606602321768",
