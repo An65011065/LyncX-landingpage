@@ -150,11 +150,8 @@ export default function AuthPage() {
             window.dispatchEvent(new CustomEvent('lyncx_auth_complete', { detail: authData }));
             console.log("✅ Event dispatched");
 
-            // Open extension tab directly with your extension ID
-            console.log("🔄 Opening extension tab...");
-            const extensionUrl = `chrome-extension://lljcelbdgpjianpjkpdckkmgkbfhoccj/src/landing/landing.html`;
-            window.open(extensionUrl, '_blank');
-            console.log("✅ Extension tab opened");
+            // Let content script handle tab opening to avoid duplicates
+            console.log("✅ Content script will handle extension tab opening");
 
             // Clear hash from URL
             window.history.replaceState(null, '', window.location.pathname + window.location.search);
