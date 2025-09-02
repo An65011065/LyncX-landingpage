@@ -75,8 +75,11 @@ export default function AuthPage() {
                 console.log("✅ User signed in:", user.email);
 
                 if (isFromExtension) {
-                    // Extension auth - send postMessage to extension
-                    notifyExtensionSuccess(user, currentAccessToken);
+                    // Extension auth - only notify if not already done in handleOAuthCallback
+                    if (!window.location.hash.includes('access_token')) {
+                        // This is likely from regular Firebase auth, not OAuth callback
+                        notifyExtensionSuccess(user, currentAccessToken);
+                    }
                 } else {
                     // Regular web auth - redirect to dashboard or home
                     window.location.href = "/";
@@ -99,6 +102,11 @@ export default function AuthPage() {
             const credential = GoogleAuthProvider.credential(idToken);
             const firebaseResult = await signInWithCredential(auth, credential);
             console.log("✅ Firebase sign-in successful:", firebaseResult.user.email);
+
+            // For extension auth, immediately notify with the access token
+            if (isExtensionAuth) {
+                await notifyExtensionSuccess(firebaseResult.user, accessToken);
+            }
 
             // Clear hash from URL
             window.history.replaceState(null, '', window.location.pathname + window.location.search);
