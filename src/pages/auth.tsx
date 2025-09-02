@@ -30,7 +30,7 @@ export default function AuthPage() {
     const [error, setError] = useState<string | null>(null);
     const [isExtensionAuth, setIsExtensionAuth] = useState(false);
     const [authComplete, setAuthComplete] = useState(false);
-    const [accessToken, setAccessToken] = useState<string | null>(null);
+    const [currentAccessToken, setCurrentAccessToken] = useState<string | null>(null);
 
     const location = useLocation();
 
