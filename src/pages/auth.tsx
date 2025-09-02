@@ -4,7 +4,6 @@ import { useLocation } from "react-router-dom";
 import { initializeApp } from "firebase/app";
 import {
     getAuth,
-    signInWithPopup,
     signInWithCredential,
     GoogleAuthProvider,
     onAuthStateChanged,
