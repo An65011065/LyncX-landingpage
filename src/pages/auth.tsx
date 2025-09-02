@@ -127,7 +127,7 @@ export default function AuthPage() {
     };
 
     const notifyExtensionSuccess = async (user: any, token: string | null) => {
-        console.log("✅ Extension auth successful, sending postMessage...");
+        console.log("✅ Extension auth successful, preparing redirect...");
         console.log("🔄 Setting authComplete to true...");
         setAuthComplete(true);
 
@@ -140,7 +140,7 @@ export default function AuthPage() {
                 photoURL: user.photoURL,
             };
 
-            console.log("🔄 Sending message to extension via localStorage:", userData);
+            console.log("🔄 Storing auth data for extension transfer:", userData);
             console.log("🔑 Including access token:", token ? 'YES' : 'NO');
             console.log("🔑 Token preview:", token ? token.substring(0, 30) + '...' : 'NULL');
 
@@ -152,35 +152,50 @@ export default function AuthPage() {
                 timestamp: Date.now()
             };
 
-            console.log("🔄 About to store auth data in localStorage...");
+            console.log("🔄 Storing auth data in localStorage...");
             localStorage.setItem('lyncx_extension_auth', JSON.stringify(authData));
             console.log("✅ Auth data stored in localStorage for extension");
 
-            // Show success message briefly before closing
-            console.log("🔄 Setting timeout to close window...");
+            // Add a flag to indicate this page should redirect
+            localStorage.setItem('lyncx_should_redirect', 'true');
+
+            // Show success message briefly before triggering extension opening
+            console.log("🔄 Setting timeout to trigger extension opening...");
             setTimeout(() => {
-                console.log("🔄 Attempting to close window...");
-                window.close();
-            }, 2000);
+                console.log("🔄 Triggering extension to open landing page...");
+                // Try to open the extension landing page in a new tab
+                // This will be handled by content script detecting the localStorage data
+                window.dispatchEvent(new CustomEvent('lyncx_auth_complete', {
+                    detail: authData
+                }));
+                
+                // Alternative: Try to create a new tab to the extension
+                try {
+                    // If running in Chrome, try to open extension landing
+                    const newTab = window.open('chrome://newtab/', '_blank');
+                    if (newTab) {
+                        console.log("✅ Opened new tab, extension should detect auth data");
+                        // Close this tab after a short delay
+                        setTimeout(() => {
+                            window.close(); // This might work for some scenarios
+                        }, 1000);
+                    }
+                } catch (error) {
+                    console.log("⚠️ Could not open new tab, content script should handle this");
+                    // Reload this page which should be handled by content script
+                    window.location.reload();
+                }
+            }, 1500);
         } catch (error) {
-            console.error("❌ Error during extension message:", error);
+            console.error("❌ Error during extension auth completion:", error);
             
-            // Send error message
-            if (typeof (window as any).chrome !== 'undefined' && 
-                (window as any).chrome.runtime && 
-                (window as any).chrome.runtime.sendMessage) {
-                (window as any).chrome.runtime.sendMessage({
+            // Send error message via custom event
+            window.dispatchEvent(new CustomEvent('extensionAuthError', {
+                detail: {
                     type: 'EXTENSION_AUTH_ERROR',
                     error: error instanceof Error ? error.message : "Unknown error"
-                });
-            } else {
-                window.dispatchEvent(new CustomEvent('extensionAuthError', {
-                    detail: {
-                        type: 'EXTENSION_AUTH_ERROR',
-                        error: error instanceof Error ? error.message : "Unknown error"
-                    }
-                }));
-            }
+                }
+            }));
             
             setError(
                 `Authentication failed: ${
@@ -190,6 +205,7 @@ export default function AuthPage() {
             setAuthComplete(false); // Allow retry
         }
     };
+
 
     const handleSignIn = async () => {
         setLoading(true);
