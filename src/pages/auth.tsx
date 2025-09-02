@@ -58,14 +58,18 @@ export default function AuthPage() {
             state: state || "NO"
         });
 
-        // Handle OAuth callback
-        if (accessToken && idToken && isFromExtension && state?.startsWith('oauth_')) {
+        // Handle OAuth callback - simplified logic
+        if (accessToken && idToken && isFromExtension) {
+            console.log("🔄 Detected OAuth callback for extension");
             handleOAuthCallback(accessToken, idToken);
             return;
         } else if (error && isFromExtension) {
+            console.log("❌ OAuth error detected:", error);
             setError(`OAuth error: ${error}`);
             setLoading(false);
             return;
+        } else if (isFromExtension && !accessToken && !idToken) {
+            console.log("🔄 Extension auth page loaded, waiting for user action");
         }
 
 
