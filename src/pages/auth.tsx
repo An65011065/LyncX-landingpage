@@ -190,11 +190,16 @@ export default function AuthPage() {
             ];
 
             // Use the current page as redirect URI with a hash fragment approach
+            // Preserve the source=extension parameter in redirect URI
+            const redirectUri = isExtensionAuth 
+                ? window.location.href.split('#')[0] // Keep the source=extension query param
+                : window.location.href.split('?')[0]; // Regular web auth without params
+                
             const params = new URLSearchParams({
                 client_id: WEB_OAUTH_CLIENT_ID,
                 response_type: 'token id_token',
                 scope: scopes.join(' '),
-                redirect_uri: window.location.href.split('?')[0], // Current page without query params
+                redirect_uri: redirectUri,
                 nonce: Math.random().toString(36).substring(2),
                 state: 'oauth_' + Math.random().toString(36).substring(2),
                 include_granted_scopes: 'true',
