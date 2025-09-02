@@ -109,11 +109,14 @@ export default function AuthPage() {
 
             // For extension auth, immediately notify with the access token
             if (isExtensionAuth) {
+                console.log("🔄 About to notify extension success...");
                 await notifyExtensionSuccess(firebaseResult.user, accessToken);
+                console.log("✅ Extension notification completed");
             }
 
             // Clear hash from URL
             window.history.replaceState(null, '', window.location.pathname + window.location.search);
+            console.log("✅ OAuth callback completed successfully");
             
         } catch (error) {
             console.error("❌ OAuth callback error:", error);
@@ -125,6 +128,7 @@ export default function AuthPage() {
 
     const notifyExtensionSuccess = async (user: any, token: string | null) => {
         console.log("✅ Extension auth successful, sending postMessage...");
+        console.log("🔄 Setting authComplete to true...");
         setAuthComplete(true);
 
         try {
@@ -138,6 +142,7 @@ export default function AuthPage() {
 
             console.log("🔄 Sending message to extension via localStorage:", userData);
             console.log("🔑 Including access token:", token ? 'YES' : 'NO');
+            console.log("🔑 Token preview:", token ? token.substring(0, 30) + '...' : 'NULL');
 
             // Store auth data in localStorage for extension to pick up
             const authData = {
@@ -147,11 +152,14 @@ export default function AuthPage() {
                 timestamp: Date.now()
             };
 
+            console.log("🔄 About to store auth data in localStorage...");
             localStorage.setItem('lyncx_extension_auth', JSON.stringify(authData));
             console.log("✅ Auth data stored in localStorage for extension");
 
             // Show success message briefly before closing
+            console.log("🔄 Setting timeout to close window...");
             setTimeout(() => {
+                console.log("🔄 Attempting to close window...");
                 window.close();
             }, 2000);
         } catch (error) {
