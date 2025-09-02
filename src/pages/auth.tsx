@@ -5,6 +5,7 @@ import { initializeApp } from "firebase/app";
 import {
     getAuth,
     signInWithPopup,
+    signInWithCredential,
     GoogleAuthProvider,
     onAuthStateChanged,
 } from "firebase/auth";
@@ -30,13 +31,15 @@ export default function AuthPage() {
     const [error, setError] = useState<string | null>(null);
     const [isExtensionAuth, setIsExtensionAuth] = useState(false);
     const [authComplete, setAuthComplete] = useState(false);
+    const [accessToken, setAccessToken] = useState<string | null>(null);
 
     const location = useLocation();
 
     useEffect(() => {
-        // Check URL params for extension auth
+        // Check URL params for extension auth and OAuth callback
         const urlParams = new URLSearchParams(location.search);
         const source = urlParams.get("source");
+        const authCode = urlParams.get("code");
 
         const isFromExtension = source === "extension";
         setIsExtensionAuth(isFromExtension);
@@ -44,7 +47,9 @@ export default function AuthPage() {
         console.log("🔍 Auth page params:", {
             source,
             isFromExtension,
+            authCode: authCode ? "YES" : "NO",
         });
+
 
         // Listen for auth state changes
         const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -53,7 +58,7 @@ export default function AuthPage() {
 
                 if (isFromExtension) {
                     // Extension auth - send postMessage to extension
-                    notifyExtensionSuccess(user);
+                    notifyExtensionSuccess(user, accessToken);
                 } else {
                     // Regular web auth - redirect to dashboard or home
                     window.location.href = "/";
@@ -64,12 +69,13 @@ export default function AuthPage() {
         return () => unsubscribe();
     }, [location, authComplete]);
 
-    const notifyExtensionSuccess = async (user: any) => {
+
+    const notifyExtensionSuccess = async (user: any, token: string | null) => {
         console.log("✅ Extension auth successful, sending postMessage...");
         setAuthComplete(true);
 
         try {
-            // Send postMessage to extension tab with user data
+            // Send postMessage to extension tab with user data and access token
             const userData = {
                 uid: user.uid,
                 email: user.email,
@@ -78,11 +84,13 @@ export default function AuthPage() {
             };
 
             console.log("🔄 Sending message to extension via localStorage:", userData);
+            console.log("🔑 Including access token:", token ? 'YES' : 'NO');
 
             // Store auth data in localStorage for extension to pick up
             const authData = {
                 type: 'EXTENSION_AUTH_SUCCESS',
                 user: userData,
+                accessToken: token,
                 timestamp: Date.now()
             };
 
@@ -127,15 +135,82 @@ export default function AuthPage() {
         setError(null);
 
         try {
-            const provider = new GoogleAuthProvider();
-            provider.setCustomParameters({
-                client_id: WEB_OAUTH_CLIENT_ID
-            });
-            provider.addScope("email");
-            provider.addScope("profile");
+            // Use Google OAuth 2.0 directly with fetch API
+            const scopes = [
+                "openid",
+                "email",
+                "profile",
+                "https://www.googleapis.com/auth/calendar.readonly",
+                "https://www.googleapis.com/auth/calendar.events", 
+                "https://www.googleapis.com/auth/gmail.send",
+                "https://www.googleapis.com/auth/gmail.readonly",
+                "https://www.googleapis.com/auth/contacts.readonly",
+                "https://www.googleapis.com/auth/youtube.readonly"
+            ];
 
-            const result = await signInWithPopup(auth, provider);
-            console.log("Sign in successful:", result.user.email);
+            // Create OAuth URL for popup
+            const params = new URLSearchParams({
+                client_id: WEB_OAUTH_CLIENT_ID,
+                response_type: 'token id_token',
+                scope: scopes.join(' '),
+                redirect_uri: window.location.origin + '/auth-callback.html',
+                nonce: Math.random().toString(36),
+                include_granted_scopes: 'true',
+                prompt: 'consent'
+            });
+
+            const authUrl = `https://accounts.google.com/oauth/v2/auth?${params.toString()}`;
+            
+            // Open popup for OAuth
+            const popup = window.open(
+                authUrl,
+                'google-auth',
+                'width=500,height=600,scrollbars=yes,resizable=yes'
+            );
+
+            if (!popup) {
+                throw new Error("Popup was blocked. Please allow popups and try again.");
+            }
+
+            // Wait for OAuth callback
+            const result = await new Promise<{accessToken: string, idToken: string}>((resolve, reject) => {
+                const checkClosed = setInterval(() => {
+                    if (popup.closed) {
+                        clearInterval(checkClosed);
+                        reject(new Error("OAuth was cancelled"));
+                    }
+                }, 1000);
+
+                // Listen for postMessage from popup
+                const handleMessage = (event: MessageEvent) => {
+                    if (event.origin !== window.location.origin) return;
+                    
+                    if (event.data.type === 'OAUTH_SUCCESS') {
+                        clearInterval(checkClosed);
+                        window.removeEventListener('message', handleMessage);
+                        popup.close();
+                        resolve({
+                            accessToken: event.data.access_token,
+                            idToken: event.data.id_token
+                        });
+                    } else if (event.data.type === 'OAUTH_ERROR') {
+                        clearInterval(checkClosed);
+                        window.removeEventListener('message', handleMessage);
+                        popup.close();
+                        reject(new Error(event.data.error));
+                    }
+                };
+
+                window.addEventListener('message', handleMessage);
+            });
+
+            console.log("✅ Got tokens from OAuth popup");
+            setAccessToken(result.accessToken);
+
+            // Sign in to Firebase with ID token
+            const credential = GoogleAuthProvider.credential(result.idToken);
+            const firebaseResult = await signInWithCredential(auth, credential);
+            console.log("✅ Firebase sign-in successful:", firebaseResult.user.email);
 
             // Auth state change will handle the redirect
         } catch (error: any) {

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>OAuth Callback</title>
+</head>
+<body>
+    <script>
+        try {
+            // Parse the hash parameters
+            const hash = window.location.hash.substring(1);
+            const params = new URLSearchParams(hash);
+            
+            const accessToken = params.get('access_token');
+            const idToken = params.get('id_token');
+            const error = params.get('error');
+            
+            if (error) {
+                window.opener.postMessage({
+                    type: 'OAUTH_ERROR',
+                    error: error
+                }, window.location.origin);
+            } else if (accessToken && idToken) {
+                window.opener.postMessage({
+                    type: 'OAUTH_SUCCESS',
+                    access_token: accessToken,
+                    id_token: idToken
+                }, window.location.origin);
+            } else {
+                window.opener.postMessage({
+                    type: 'OAUTH_ERROR',
+                    error: 'No tokens received'
+                }, window.location.origin);
+            }
+        } catch (e) {
+            window.opener.postMessage({
+                type: 'OAUTH_ERROR',
+                error: e.message
+            }, window.location.origin);
+        }
+    </script>
+</body>
+</html>
