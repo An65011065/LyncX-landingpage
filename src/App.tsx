@@ -4,6 +4,7 @@ import { CommandDemo } from "./components/demo/CommandDemo";
 import Privacy from "./components/demo/Privacy";
 import AuthPage from "./pages/auth";
 import Player from "./pages/Player";
+import NotFound from "./pages/NotFound";
 
 const App: React.FC = () => {
     return (
@@ -21,6 +22,7 @@ const App: React.FC = () => {
                     <Route path="/auth" element={<AuthPage />} />
                     <Route path="/play" element={<Player />} />
                     <Route path="/player" element={<Player />} />
+                    <Route path="*" element={<NotFound />} />
                 </Routes>
             </div>
         </BrowserRouter>
