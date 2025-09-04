@@ -227,7 +227,7 @@ const DemoFlowModal: React.FC = () => {
 
 const DemoNotepadModal: React.FC = () => {
     const sampleNote =
-        "Bias-Variance \n\nIn the general case, mean-squared error can be decomposed into three components: error due to bias, error due to variance, and error due to noise.\n\nError = Bias² + Variance + Noise\n\nFor underfit (low-complexity) models, the majority of our error comes from bias. Variance measures how much, on average, predictions vary for a given data point.\n\n- Bias: how far off our predictions are from the true value\n- Variance: how much predictions change with different training sets\n- Noise: irreducible error in the data\n\nHigh bias = underfitting (too simple)\nHigh variance = overfitting (too complex)\n\nGoal: find the sweet spot!";
+        "Thoughts on this climate tech article:\n\n- Really interesting take on carbon capture being overhyped\n- The 2030 timeline feels way too optimistic given current progress\n- Author is clearly pro-nuclear but makes solid points about baseload power\n- Need to fact-check that Sweden renewable energy stat (claimed 90%?)\n\nKey insight: \"technological solutions alone won't solve behavioral problems\"\n\nThis reminds me of that paper I bookmarked about consumer behavior vs policy changes...\n\nQuestions to explore:\n- What's the actual cost per ton for direct air capture?\n- How does this compare to the Nature study from last month?\n\nFollow up: look into that MIT research they cited";
 
     return (
         <div className="notepad-demo-modal">
@@ -245,8 +245,8 @@ const DemoNotepadModal: React.FC = () => {
 
             <div className="notepad-demo-domain-header">
                 <div className="demo-domain-selector">
-                    <h2 className="demo-domain-title">Wikipedia</h2>
-                    <div className="demo-domain-count">4 notes</div>
+                    <h2 className="demo-domain-title">The Atlantic</h2>
+                    <div className="demo-domain-count">7 notes</div>
                 </div>
                 <div className="demo-status-indicator">
                     <div className="demo-saved-icon">✓</div>
@@ -268,10 +268,10 @@ const DemoNotepadModal: React.FC = () => {
             <div className="notepad-demo-tabs-section">
                 <div className="demo-domain-tabs">
                     <button className="demo-domain-tab active">
-                        mlu-explain
+                        theatlantic
                     </button>
-                    <button className="demo-domain-tab">facebook</button>
-                    <button className="demo-domain-tab">arxiv</button>
+                    <button className="demo-domain-tab">instagram</button>
+                    <button className="demo-domain-tab">canva</button>
                 </div>
             </div>
 
@@ -285,8 +285,8 @@ const DemoNotepadModal: React.FC = () => {
 
             <div className="notepad-demo-footer">
                 <div className="demo-footer-stats">
-                    <span className="demo-word-count">89 words</span>
-                    <span className="demo-char-count">567 characters</span>
+                    <span className="demo-word-count">125 words</span>
+                    <span className="demo-char-count">678 characters</span>
                 </div>
                 <div className="demo-footer-status">Saved</div>
             </div>
@@ -857,51 +857,35 @@ const DemoLimitModal: React.FC = () => {
     );
 };
 
-const DemoSpotifyPlayer: React.FC = () => {
+const DemoYouTubePlayer: React.FC = () => {
     return (
-        <div className="spotify-demo-container">
-            <div className="spotify-demo-player">
-                <button className="spotify-demo-minimize-btn">−</button>
-                <button className="spotify-demo-close-btn">×</button>
+        <div className="youtube-demo-container">
+            <div className="youtube-demo-player">
+                <button className="youtube-demo-minimize-btn">−</button>
+                <button className="youtube-demo-close-btn">×</button>
 
-                <div className="spotify-demo-album-art">
-                    <div className="spotify-demo-album-gradient"></div>
-                    <div className="spotify-demo-spotify-icon">♪</div>
-                </div>
-
-                <div className="spotify-demo-track-info">
-                    <div className="spotify-demo-track-name">
-                        Sunsets in Georgia
+                <div className="youtube-demo-header">
+                    <div className="youtube-demo-video-title">
+                        YT: Rolling In the Deep
                     </div>
-                    <div className="spotify-demo-artist-name">JP</div>
                 </div>
 
-                <div className="spotify-demo-controls">
-                    <button className="spotify-demo-control-btn">⏮</button>
-                    <button className="spotify-demo-play-btn">▶</button>
-                    <button className="spotify-demo-control-btn">⏭</button>
-                </div>
-
-                <div className="spotify-demo-progress">
-                    <div className="spotify-demo-progress-bar">
-                        <div className="spotify-demo-progress-fill"></div>
-                        <div className="spotify-demo-progress-thumb"></div>
-                    </div>
-                    <div className="spotify-demo-time">
-                        <span>1:42</span>
-                        <span>4:01</span>
+                <div className="youtube-demo-video">
+                    <div className="youtube-demo-thumbnail">
+                        <div className="youtube-demo-play-overlay">▶</div>
+                        <div className="youtube-demo-duration">3:21</div>
                     </div>
                 </div>
             </div>
 
             <style>{`
-                .spotify-demo-container {
+                .youtube-demo-container {
                     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
                     display: flex;
                     justify-content: center;
                 }
                 
-                .spotify-demo-player {
+                .youtube-demo-player {
                     position: relative;
                     background: rgba(255, 251, 235, 0.98);
                     backdrop-filter: blur(20px);
@@ -916,7 +900,7 @@ const DemoSpotifyPlayer: React.FC = () => {
                     gap: 12px;
                 }
                 
-                .spotify-demo-minimize-btn {
+                .youtube-demo-minimize-btn {
                     position: absolute;
                     top: 12px;
                     right: 44px;
@@ -935,7 +919,7 @@ const DemoSpotifyPlayer: React.FC = () => {
                     transition: all 0.2s ease;
                 }
                 
-                .spotify-demo-close-btn {
+                .youtube-demo-close-btn {
                     position: absolute;
                     top: 12px;
                     right: 16px;
@@ -954,152 +938,63 @@ const DemoSpotifyPlayer: React.FC = () => {
                     transition: all 0.2s ease;
                 }
                 
-                .spotify-demo-minimize-btn:hover,
-                .spotify-demo-close-btn:hover {
+                .youtube-demo-minimize-btn:hover,
+                .youtube-demo-close-btn:hover {
                     background: rgba(218, 165, 32, 0.25);
                     color: rgba(160, 82, 45, 1);
                     transform: scale(1.05);
                 }
                 
-                .spotify-demo-album-art {
-                    width: 60px;
-                    height: 60px;
-                    border-radius: 8px;
+                .youtube-demo-header {
+                    display: flex;
+                    align-items: center;
+                    padding-right: 80px;
+                    margin-top: 0px;
+                }
+                
+                .youtube-demo-video-title {
+                    font-size: 14px;
+                    font-weight: 600;
+                    color: rgba(101, 67, 33, 0.95);
+                    line-height: 1.2;
+                    flex: 1;
+                }
+                
+                .youtube-demo-video {
                     position: relative;
+                    width: 100%;
+                    height: 162px;
+                    border-radius: 8px;
                     overflow: hidden;
-                    align-self: center;
+                    background: linear-gradient(135deg, rgba(218, 165, 32, 0.3), rgba(205, 133, 63, 0.5));
+                }
+                
+                .youtube-demo-thumbnail {
+                    position: relative;
+                    width: 100%;
+                    height: 100%;
                     background: linear-gradient(135deg, rgba(218, 165, 32, 0.6), rgba(205, 133, 63, 0.8));
                     display: flex;
                     align-items: center;
                     justify-content: center;
                 }
                 
-                .spotify-demo-album-gradient {
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    right: 0;
-                    bottom: 0;
-                    background: linear-gradient(135deg, rgba(255, 193, 7, 0.3), rgba(255, 152, 0, 0.5));
-                }
-                
-                .spotify-demo-spotify-icon {
-                    position: relative;
-                    z-index: 1;
+                .youtube-demo-play-overlay {
                     color: rgba(255, 251, 235, 0.9);
-                    font-size: 20px;
-                    font-weight: bold;
+                    font-size: 32px;
+                    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
                 }
                 
-                .spotify-demo-track-info {
-                    text-align: center;
-                }
-                
-                .spotify-demo-track-name {
-                    font-size: 16px;
+                .youtube-demo-duration {
+                    position: absolute;
+                    bottom: 8px;
+                    right: 8px;
+                    background: rgba(0, 0, 0, 0.8);
+                    color: white;
+                    padding: 2px 6px;
+                    border-radius: 4px;
+                    font-size: 11px;
                     font-weight: 600;
-                    color: rgba(101, 67, 33, 0.95);
-                    line-height: 1.2;
-                    margin-bottom: 2px;
-                }
-                
-                .spotify-demo-artist-name {
-                    font-size: 13px;
-                    color: rgba(160, 82, 45, 0.7);
-                    font-weight: 500;
-                }
-                
-                .spotify-demo-controls {
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    gap: 12px;
-                    margin: 4px 0;
-                }
-                
-                .spotify-demo-control-btn {
-                    width: 32px;
-                    height: 32px;
-                    border: none;
-                    background: rgba(218, 165, 32, 0.12);
-                    border-radius: 8px;
-                    color: rgba(160, 82, 45, 0.8);
-                    cursor: pointer;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    font-size: 12px;
-                    transition: all 0.2s ease;
-                }
-                
-                .spotify-demo-control-btn:hover {
-                    background: rgba(218, 165, 32, 0.2);
-                    transform: scale(1.05);
-                }
-                
-                .spotify-demo-play-btn {
-                    width: 44px;
-                    height: 44px;
-                    border: none;
-                    background: linear-gradient(135deg, rgba(218, 165, 32, 0.9), rgba(205, 133, 63, 0.9));
-                    border-radius: 50%;
-                    color: rgba(101, 67, 33, 0.95);
-                    cursor: pointer;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    font-size: 16px;
-                    transition: all 0.2s ease;
-                    box-shadow: 0 4px 12px rgba(160, 82, 45, 0.3);
-                }
-                
-                .spotify-demo-play-btn:hover {
-                    transform: scale(1.05);
-                    box-shadow: 0 6px 16px rgba(160, 82, 45, 0.4);
-                }
-                
-                .spotify-demo-progress {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 6px;
-                }
-                
-                .spotify-demo-progress-bar {
-                    position: relative;
-                    height: 4px;
-                    background: rgba(218, 165, 32, 0.2);
-                    border-radius: 2px;
-                    overflow: visible;
-                }
-                
-                .spotify-demo-progress-fill {
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    height: 100%;
-                    width: 42%;
-                    background: rgba(218, 165, 32, 0.8);
-                    border-radius: 2px;
-                }
-                
-                .spotify-demo-progress-thumb {
-                    position: absolute;
-                    top: 50%;
-                    left: 42%;
-                    width: 12px;
-                    height: 12px;
-                    background: rgba(218, 165, 32, 0.9);
-                    border-radius: 50%;
-                    transform: translate(-50%, -50%);
-                    box-shadow: 0 2px 4px rgba(160, 82, 45, 0.3);
-                }
-                
-                .spotify-demo-time {
-                    display: flex;
-                    justify-content: space-between;
-                    font-size: 10px;
-                    color: rgba(160, 82, 45, 0.6);
-                    font-weight: 500;
                     font-variant-numeric: tabular-nums;
                 }
             `}</style>
@@ -1554,7 +1449,7 @@ const ModularSection: React.FC = () => {
                     const components = [
                         "flow",
                         "notes",
-                        "spotify",
+                        "youtube",
                         "timebar",
                         "analytics",
                         "limit",
@@ -1666,12 +1561,12 @@ const ModularSection: React.FC = () => {
                         <div className="flex flex-col items-center space-y-6 sm:space-y-8">
                             <div
                                 className={`w-full max-w-sm transition-opacity duration-700 ${
-                                    visibleComponents.has("spotify")
+                                    visibleComponents.has("youtube")
                                         ? "opacity-100"
                                         : "opacity-0"
                                 }`}
                             >
-                                <DemoSpotifyPlayer />
+                                <DemoYouTubePlayer />
                             </div>
                             <div className="space-y-6 w-full max-w-sm">
                                 <div>
