@@ -24,12 +24,6 @@ const NotFound: React.FC = () => {
     return (
         <div className="not-found-container">
             <div className={`content-wrapper ${mounted ? 'mounted' : ''}`}>
-                <div className="logo-section">
-                    <div className="linkx-logo">
-                        <span className="logo-text">/x</span>
-                    </div>
-                    <h1 className="brand-name">LyncX</h1>
-                </div>
 
                 <div className="main-content">
                     <div className="emoji-container">
@@ -60,15 +54,6 @@ const NotFound: React.FC = () => {
                         </button>
                     </div>
 
-                    <div className="help-section">
-                        <p className="help-text">
-                            Lost? Try these popular destinations:
-                        </p>
-                        <div className="quick-links">
-                            <Link to="/" className="quick-link">Home</Link>
-                            <Link to="/privacy" className="quick-link">Privacy</Link>
-                        </div>
-                    </div>
                 </div>
 
                 {/* Decorative elements */}
@@ -106,45 +91,6 @@ const NotFound: React.FC = () => {
                     transform: translateY(0);
                 }
 
-                /* Logo Section */
-                .logo-section {
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    gap: 1rem;
-                    margin-bottom: 3rem;
-                }
-
-                .linkx-logo {
-                    width: 48px;
-                    height: 48px;
-                    background: #c68346;
-                    border-radius: 12px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    box-shadow: 0 8px 25px rgba(198, 131, 70, 0.25);
-                    transform: rotate(-5deg);
-                    transition: transform 0.3s ease;
-                }
-
-                .linkx-logo:hover {
-                    transform: rotate(0deg) scale(1.05);
-                }
-
-                .logo-text {
-                    font-size: 24px;
-                    font-weight: bold;
-                    color: white;
-                    letter-spacing: 1px;
-                }
-
-                .brand-name {
-                    font-size: 2rem;
-                    font-weight: 600;
-                    color: #2d1810;
-                    margin: 0;
-                }
 
                 /* Main Content */
                 .main-content {
@@ -261,39 +207,6 @@ const NotFound: React.FC = () => {
                     transform: translateY(-2px);
                 }
 
-                /* Help Section */
-                .help-section {
-                    border-top: 1px solid #e5e5e5;
-                    padding-top: 1.5rem;
-                }
-
-                .help-text {
-                    font-size: 0.875rem;
-                    color: #8b4513;
-                    margin: 0 0 1rem 0;
-                }
-
-                .quick-links {
-                    display: flex;
-                    justify-content: center;
-                    gap: 1.5rem;
-                    flex-wrap: wrap;
-                }
-
-                .quick-link {
-                    color: #c68346;
-                    text-decoration: none;
-                    font-weight: 500;
-                    padding: 0.5rem 1rem;
-                    border-radius: 0.5rem;
-                    transition: all 0.2s ease;
-                    position: relative;
-                }
-
-                .quick-link:hover {
-                    background: rgba(198, 131, 70, 0.08);
-                    color: #b07139;
-                }
 
                 /* Decorative Elements */
                 .decoration-dots {
@@ -355,9 +268,6 @@ const NotFound: React.FC = () => {
                         justify-content: center;
                     }
 
-                    .quick-links {
-                        gap: 1rem;
-                    }
                 }
             `}</style>
         </div>
