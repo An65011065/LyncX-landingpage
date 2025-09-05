@@ -51,7 +51,7 @@ const FooterDemo: React.FC = () => {
                                     service@lyncx.ai
                                 </span>
                                 <span className="text-[var(--muted-text)] text-sm">
-                                    © 2025 LyncXAI. All rights reserved.
+                                    © 2025 Lyncx. All rights reserved.
                                 </span>
                             </div>
                         </div>

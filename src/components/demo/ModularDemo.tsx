@@ -1,4 +1,12 @@
 import React from "react";
+import {
+    Camera,
+    BarChart3,
+    Calendar,
+    FileText,
+    Timer,
+    Shield,
+} from "lucide-react";
 
 // Demo Components for Modular Section
 const DemoFlowModal: React.FC = () => {
@@ -665,7 +673,6 @@ const DemoLimitModal: React.FC = () => {
             <button className="limit-demo-close-btn">×</button>
 
             <div className="limit-demo-header">
-                <div className="limit-demo-header-icon">⏰</div>
                 <h1 className="limit-demo-modal-title">Daily Focus Time</h1>
                 <p className="limit-demo-modal-subtitle">
                     Set a limit for youtube.com
@@ -693,7 +700,6 @@ const DemoLimitModal: React.FC = () => {
 
             <div className="limit-demo-action-section">
                 <button className="limit-demo-save-button">
-                    <span>⚡</span>
                     <span>Set Limit</span>
                 </button>
             </div>
@@ -1293,41 +1299,70 @@ const DemoClipboardManager: React.FC = () => {
 };
 
 const DemoHoverNavbar: React.FC = () => {
-    const navItems = [
-        { icon: "📸", label: "Screenshot" },
-        { icon: "📊", label: "Analytics" },
-        { icon: "📅", label: "Flow" },
-        { icon: "🎯", label: "Explore" },
-        { icon: "📝", label: "Notes" },
-        { icon: "⏱", label: "Timer" },
-        { icon: "🛡", label: "Limits" },
-    ];
-
     return (
         <div className="hover-navbar-demo">
             <div className="hover-navbar-demo-container">
                 <div className="hover-navbar-demo-content">
-                    {navItems.slice(0, 2).map((item, index) => (
-                        <div key={index} className="hover-navbar-demo-item">
-                            <span className="demo-nav-icon">{item.icon}</span>
+                    {/* Data Tools Section */}
+                    <div className="hover-navbar-demo-section">
+                        <div className="hover-navbar-demo-item">
+                            <Camera
+                                size={18}
+                                strokeWidth={2}
+                                className="demo-nav-icon"
+                            />
                         </div>
-                    ))}
+                        <div className="hover-navbar-demo-item">
+                            <BarChart3
+                                size={18}
+                                strokeWidth={2}
+                                className="demo-nav-icon"
+                            />
+                        </div>
+                    </div>
 
                     <div className="hover-navbar-demo-separator"></div>
 
-                    {navItems.slice(2, 5).map((item, index) => (
-                        <div key={index} className="hover-navbar-demo-item">
-                            <span className="demo-nav-icon">{item.icon}</span>
+                    {/* Quick Actions Section */}
+                    <div className="hover-navbar-demo-section">
+                        <div className="hover-navbar-demo-item">
+                            <Calendar
+                                size={18}
+                                strokeWidth={2}
+                                className="demo-nav-icon"
+                            />
                         </div>
-                    ))}
+                        <div className="hover-navbar-demo-item">
+                            <div className="demo-linkx-logo">/x</div>
+                        </div>
+                        <div className="hover-navbar-demo-item">
+                            <FileText
+                                size={18}
+                                strokeWidth={2}
+                                className="demo-nav-icon"
+                            />
+                        </div>
+                    </div>
 
                     <div className="hover-navbar-demo-separator"></div>
 
-                    {navItems.slice(5).map((item, index) => (
-                        <div key={index} className="hover-navbar-demo-item">
-                            <span className="demo-nav-icon">{item.icon}</span>
+                    {/* Other Tools Section */}
+                    <div className="hover-navbar-demo-section">
+                        <div className="hover-navbar-demo-item">
+                            <Timer
+                                size={18}
+                                strokeWidth={2}
+                                className="demo-nav-icon"
+                            />
                         </div>
-                    ))}
+                        <div className="hover-navbar-demo-item">
+                            <Shield
+                                size={18}
+                                strokeWidth={2}
+                                className="demo-nav-icon"
+                            />
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -1339,20 +1374,27 @@ const DemoHoverNavbar: React.FC = () => {
                     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
                 }
                 
+                
+                
                 .hover-navbar-demo-container {
                     width: 52px;
                     height: auto;
                     max-height: 350px;
-                    background: rgba(255, 255, 255, 0.9);
-                    backdrop-filter: blur(10px);
-                    border: 1px solid rgba(0, 0, 0, 0.1);
+                    background: rgba(255, 255, 255, 0.95);
+                    backdrop-filter: blur(15px);
+                    border: 1px solid rgba(198, 131, 70, 0.2);
                     border-radius: 0 12px 12px 0;
-                    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+                    box-shadow: 
+                        2px 0 12px rgba(0, 0, 0, 0.15),
+                        0 0 20px rgba(198, 131, 70, 0.3),
+                        inset 0 0 0 1px rgba(255, 255, 255, 0.8);
                     display: flex;
                     flex-direction: column;
                     padding: 16px 0;
                     align-items: center;
                     gap: 8px;
+                    position: relative;
+                    transition: all 0.3s ease;
                 }
                 
                 @media (max-width: 768px) {
@@ -1371,7 +1413,9 @@ const DemoHoverNavbar: React.FC = () => {
                     .demo-nav-icon {
                         font-size: 14px !important;
                     }
+                    
                 }
+                
                 
                 .hover-navbar-demo-content {
                     display: flex;
@@ -1379,6 +1423,13 @@ const DemoHoverNavbar: React.FC = () => {
                     gap: 8px;
                     width: 100%;
                     align-items: center;
+                }
+                
+                .hover-navbar-demo-section {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 8px;
                 }
                 
                 .hover-navbar-demo-item {
@@ -1398,8 +1449,24 @@ const DemoHoverNavbar: React.FC = () => {
                 }
                 
                 .demo-nav-icon {
-                    font-size: 16px;
                     opacity: 0.8;
+                    color: #374151;
+                }
+                
+                .demo-linkx-logo {
+                    width: 27px;                    /* size * 1.5 = 18 * 1.5 */
+                    height: 27px;                   /* size * 1.5 = 18 * 1.5 */
+                    background-color: #c68346;     /* Primary button color */
+                    border-radius: 5.4px;          /* size * 0.3 = 18 * 0.3 */
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 15.3px;             /* size * 0.85 = 18 * 0.85 */
+                    letter-spacing: 1.1px;
+                    font-weight: bold;
+                    color: #FFFFFF;
+                    line-height: 1;
+                    font-family: Nunito, -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
                 }
                 
                 .hover-navbar-demo-separator {
@@ -1420,6 +1487,7 @@ const ModularSection: React.FC = () => {
     >(new Set());
     const [showNavbar, setShowNavbar] = React.useState(false);
     const sectionRef = React.useRef<HTMLElement>(null);
+    const navbarRef = React.useRef<HTMLDivElement>(null);
 
     React.useEffect(() => {
         const isMobile = window.innerWidth < 768;
@@ -1497,6 +1565,7 @@ const ModularSection: React.FC = () => {
         >
             {/* Hover Navbar - Positioned on far left, animated on scroll */}
             <div
+                ref={navbarRef}
                 className={`fixed left-0 top-1/2 transform -translate-y-1/2 z-10 transition-all duration-700 ease-out ${
                     isVisible && showNavbar
                         ? "translate-x-0 opacity-100"
@@ -1515,7 +1584,11 @@ const ModularSection: React.FC = () => {
                         </span>
                     </h2>
                     <p className="text-lg sm:text-xl text-[var(--muted-text)] max-w-3xl mx-auto leading-relaxed px-4">
-                        Use the sidebar to open tools on any website.
+                        Use the{" "}
+                        <span className="font-semibold text-[var(--accent-color)]">
+                            sidebar
+                        </span>{" "}
+                        to open tools on any website.
                     </p>
                 </div>
 

@@ -493,7 +493,7 @@ const DataCard: React.FC<{
     );
 };
 
-const DataBox: React.FC<{ activeTab: "ai" | "domains" | "activity" }> = ({
+const DataBox: React.FC<{ activeTab: "domains" | "activity" }> = ({
     activeTab,
 }) => {
     const [showGrid] = useState(true);
@@ -520,28 +520,12 @@ const DataBox: React.FC<{ activeTab: "ai" | "domains" | "activity" }> = ({
     };
 
     const cardColors = {
-        ai: "hsl(32, 62%, 47%)",
         domains: "hsl(158, 43%, 33%)",
         activity: "hsl(262, 44%, 53%)",
     };
 
     const renderCard = () => {
         switch (activeTab) {
-            case "ai":
-                return (
-                    <DataCard
-                        title="AI Insights"
-                        value="92%"
-                        subtitle="productivity score"
-                        description="Your browsing patterns show strong focus on development work with minimal distractions"
-                        color={cardColors.ai}
-                        backgroundPattern="curves"
-                        icon={
-                            <div className="w-6 h-6 bg-white/20 rounded-full"></div>
-                        }
-                    />
-                );
-
             case "domains":
                 return (
                     <DataCard
@@ -708,8 +692,8 @@ const AnimationSpace: React.FC<{
     viewCardRef: React.RefObject<HTMLDivElement>;
     animationSpaceRef: React.RefObject<HTMLElement>;
 }> = ({ dataCardRef, lyncxCardRef, viewCardRef, animationSpaceRef }) => {
-    const [activeTab, setActiveTab] = useState<"ai" | "domains" | "activity">(
-        "ai",
+    const [activeTab, setActiveTab] = useState<"domains" | "activity">(
+        "domains",
     );
 
     return (
@@ -723,8 +707,8 @@ const AnimationSpace: React.FC<{
                         /data
                     </h3>
                     <p className="text-[var(--muted-text)] text-sm mb-6 max-w-80">
-                        See where you spend your time and learn more about your
-                        browsing habits.
+                        See where you spend your time across different domains and
+                        track your daily browsing activity.
                     </p>
 
                     <div
@@ -732,16 +716,6 @@ const AnimationSpace: React.FC<{
                         className="bg-white/10 backdrop-blur-sm rounded-xl border-2 border-[var(--border)] w-96 h-96 flex flex-col relative"
                     >
                         <div className="absolute top-4 right-4 flex gap-2 z-20">
-                            <button
-                                onClick={() => setActiveTab("ai")}
-                                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                                    activeTab === "ai"
-                                        ? "bg-[var(--accent-color)] text-white"
-                                        : "bg-white/20 text-[var(--muted-text)] hover:bg-white/30"
-                                }`}
-                            >
-                                AI
-                            </button>
                             <button
                                 onClick={() => setActiveTab("domains")}
                                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${

@@ -788,7 +788,7 @@ const DataCard: React.FC<{
     );
 };
 
-const DataBox: React.FC<{ activeTab: "ai" | "domains" | "activity" }> = ({
+const DataBox: React.FC<{ activeTab: "time" | "domains" | "activity" }> = ({
     activeTab,
 }) => {
     const [showGrid] = useState(true);
@@ -815,21 +815,21 @@ const DataBox: React.FC<{ activeTab: "ai" | "domains" | "activity" }> = ({
     };
 
     const cardColors = {
-        ai: "hsl(32, 62%, 47%)",
+        time: "hsl(198, 65%, 45%)",
         domains: "hsl(158, 43%, 33%)",
         activity: "hsl(262, 44%, 53%)",
     };
 
     const renderCard = () => {
         switch (activeTab) {
-            case "ai":
+            case "time":
                 return (
                     <DataCard
-                        title="AI Insights"
-                        value="92%"
-                        subtitle="productivity score"
-                        description="Your browsing patterns show strong focus on development work with minimal distractions"
-                        color={cardColors.ai}
+                        title="Time Balance"
+                        value="29 minutes"
+                        subtitle="across 3 websites"
+                        description="11m productive • 18m leisure"
+                        color={cardColors.time}
                         backgroundPattern="curves"
                         icon={
                             <div className="w-6 h-6 bg-white/20 rounded-full"></div>
@@ -1003,8 +1003,8 @@ const AnimationSpace: React.FC<{
     viewCardRef: React.RefObject<HTMLDivElement>;
     animationSpaceRef: React.RefObject<HTMLElement>;
 }> = ({ dataCardRef, lyncxCardRef, viewCardRef, animationSpaceRef }) => {
-    const [activeTab, setActiveTab] = useState<"ai" | "domains" | "activity">(
-        "ai",
+    const [activeTab, setActiveTab] = useState<"time" | "domains" | "activity">(
+        "time",
     );
 
     return (
@@ -1015,7 +1015,7 @@ const AnimationSpace: React.FC<{
             <div className="relative z-10 w-full h-full flex flex-col lg:flex-row items-center justify-center gap-8 sm:gap-12 px-4">
                 <div className="flex flex-col items-center text-center relative">
                     <h3 className="text-2xl sm:text-3xl font-bold text-[var(--text)] mb-2">
-                        /data
+                        track
                     </h3>
                     <p className="text-[var(--muted-text)] text-sm mb-6 max-w-80">
                         See where you spend your time and learn more about your
@@ -1028,14 +1028,14 @@ const AnimationSpace: React.FC<{
                     >
                         <div className="absolute top-4 right-4 flex gap-2 z-20">
                             <button
-                                onClick={() => setActiveTab("ai")}
+                                onClick={() => setActiveTab("time")}
                                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                                    activeTab === "ai"
+                                    activeTab === "time"
                                         ? "bg-[var(--accent-color)] text-white"
                                         : "bg-white/20 text-[var(--muted-text)] hover:bg-white/30"
                                 }`}
                             >
-                                AI
+                                time
                             </button>
                             <button
                                 onClick={() => setActiveTab("domains")}
@@ -1064,7 +1064,7 @@ const AnimationSpace: React.FC<{
 
                 <div className="flex flex-col items-center text-center">
                     <h3 className="text-2xl sm:text-3xl font-bold text-[var(--text)] mb-2">
-                        /visualize
+                        visualize
                     </h3>
                     <p className="text-[var(--muted-text)] text-sm mb-6">
                         Visualize all your links.
@@ -1094,7 +1094,7 @@ const AnimationSpace: React.FC<{
 
                 <div className="flex flex-col items-center text-center">
                     <h3 className="text-2xl sm:text-3xl font-bold text-[var(--text)] mb-2">
-                        /download
+                        download
                     </h3>
                     <p className="text-[var(--muted-text)] text-sm mb-6 max-w-80">
                         You can download your data, already standardized for R
@@ -1105,8 +1105,8 @@ const AnimationSpace: React.FC<{
                         ref={viewCardRef}
                         className="backdrop-blur-sm rounded-xl border-2 w-[320px] h-[320px] sm:w-80 sm:h-80 lg:w-96 lg:h-96 flex flex-col items-center justify-center gap-6"
                         style={{
-                            backgroundColor: "#1e3a8a",
-                            borderColor: "#1e3a8a",
+                            backgroundColor: "#059669",
+                            borderColor: "#059669",
                         }}
                     >
                         {/* Big Bold Downward Arrow */}
@@ -1119,7 +1119,7 @@ const AnimationSpace: React.FC<{
                             strokeWidth="2"
                             strokeLinecap="round"
                             strokeLinejoin="round"
-                            className="text-blue-300"
+                            className="text-green-300"
                         >
                             <path d="M12 5v14" />
                             <path d="M19 12l-7 7-7-7" />
