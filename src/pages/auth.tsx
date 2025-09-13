@@ -1,29 +1,9 @@
-// src/pages/auth.tsx - Complete with debug alerts
+// src/pages/auth.tsx - Simplified for extension auth without Firebase Auth
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { initializeApp } from "firebase/app";
-import {
-    getAuth,
-    signInWithCredential,
-    GoogleAuthProvider,
-    onAuthStateChanged,
-} from "firebase/auth";
-
-const firebaseConfig = {
-    apiKey: "AIzaSyAlQbwqFDB0XMZv8du485VBsqVxU3S-vpY",
-    authDomain: "lyncx.ai",
-    projectId: "linkx-b2c62",
-    storageBucket: "linkx-b2c62.firebasestorage.app",
-    messagingSenderId: "606602321768",
-    appId: "1:606602321768:web:764410dd29bbb76e47c0dd",
-    measurementId: "G-ZEQRBXMSSB",
-};
 
 // Web Application OAuth Client ID (for universal browser compatibility)
 const WEB_OAUTH_CLIENT_ID = "606602321768-s9h4rdbjtieqnc3lh411h0v15q30kjq5.apps.googleusercontent.com";
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
 
 export default function AuthPage() {
     const [loading, setLoading] = useState(false);
@@ -51,16 +31,16 @@ export default function AuthPage() {
         const isFromExtension = source === "extension";
         setIsExtensionAuth(isFromExtension);
 
-        console.log("🔍 Auth page params:", {
-            source,
-            isFromExtension,
-            code: code ? "YES" : "NO",
-            accessToken: accessToken ? "YES" : "NO",
-            idToken: idToken ? "YES" : "NO", 
-            refreshToken: refreshToken ? "YES" : "NO",
-            error: error || "NO",
-            state: state || "NO"
-        });
+        // console.log("🔍 Auth page params:", {
+        //     source,
+        //     isFromExtension,
+        //     code: code ? "YES" : "NO",
+        //     accessToken: accessToken ? "YES" : "NO",
+        //     idToken: idToken ? "YES" : "NO", 
+        //     refreshToken: refreshToken ? "YES" : "NO",
+        //     error: error || "NO",
+        //     state: state || "NO"
+        // });
 
         // Handle OAuth callback - support both authorization code and implicit flows
         if (code && isFromExtension) {
@@ -81,19 +61,8 @@ export default function AuthPage() {
         }
 
 
-        // Listen for auth state changes
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-            if (user) {
-                console.log("✅ User signed in:", user.email);
-
-                // Just redirect to home for any regular auth that's not OAuth callback
-                if (!window.location.hash.includes('access_token') && !isExtensionAuth) {
-                    window.location.href = "/";
-                }
-            }
-        });
-
-        return () => unsubscribe();
+        // Extension auth doesn't need Firebase Auth state listener
+        return () => {}; // No cleanup needed
     }, [location, isExtensionAuth]);
 
     const handleAuthorizationCodeCallback = async (code: string) => {
@@ -103,6 +72,10 @@ export default function AuthPage() {
         try {
             // Exchange authorization code for tokens using Firebase Function
             console.log("🔄 Calling Firebase Function to exchange code for tokens");
+            const redirectUri = `${window.location.origin}/auth?source=extension`;
+            console.log("🔗 Using redirect URI:", redirectUri);
+            console.log("🔑 Using client ID:", WEB_OAUTH_CLIENT_ID);
+            console.log("📄 Authorization code:", code.substring(0, 20) + "...");
             
             const response = await fetch(
                 "https://us-central1-linkx-b2c62.cloudfunctions.net/exchangeCodeForTokens",
@@ -115,7 +88,7 @@ export default function AuthPage() {
                         data: {
                             code: code,
                             clientId: WEB_OAUTH_CLIENT_ID,
-                            redirectUri: `${window.location.origin}${window.location.pathname}?source=extension`,
+                            redirectUri: redirectUri,
                         },
                     }),
                 }
@@ -184,42 +157,18 @@ export default function AuthPage() {
         console.log("✅ Got access token and ID token from OAuth");
         
         try {
-            let firebaseUser;
+            // Decode ID token directly to get user info (no Firebase Auth needed for extension)
+            console.log("🔄 Extracting user info from ID token...");
+            const base64Payload = idToken.split('.')[1];
+            const payload = JSON.parse(atob(base64Payload));
+            console.log("✅ Extracted user info from ID token:", payload.email);
             
-            // Check if user is already signed in to avoid duplicate sign-in
-            if (auth.currentUser) {
-                console.log("✅ User already signed in to Firebase:", auth.currentUser.email);
-                firebaseUser = auth.currentUser;
-            } else {
-                try {
-                    // Sign in to Firebase with ID token to get user info
-                    console.log("🔄 Signing in to Firebase...");
-                    const credential = GoogleAuthProvider.credential(idToken);
-                    const firebaseResult = await signInWithCredential(auth, credential);
-                    console.log("✅ Firebase sign-in successful:", firebaseResult.user.email);
-                    firebaseUser = firebaseResult.user;
-                } catch (firebaseError: any) {
-                    console.error("⚠️ Firebase sign-in error (continuing anyway):", firebaseError);
-                    
-                    // If Firebase sign-in fails but we have the ID token, decode it for user info
-                    try {
-                        // Simple JWT decode (just the payload, no verification needed since it came from Google)
-                        const base64Payload = idToken.split('.')[1];
-                        const payload = JSON.parse(atob(base64Payload));
-                        console.log("✅ Extracted user info from ID token:", payload.email);
-                        
-                        firebaseUser = {
-                            uid: payload.sub,
-                            email: payload.email,
-                            displayName: payload.name,
-                            photoURL: payload.picture
-                        };
-                    } catch (decodeError) {
-                        console.error("❌ Failed to decode ID token:", decodeError);
-                        throw new Error("Failed to extract user information");
-                    }
-                }
-            }
+            const firebaseUser = {
+                uid: payload.sub,
+                email: payload.email,
+                displayName: payload.name,
+                photoURL: payload.picture
+            };
 
             // ALWAYS store OAuth data when we have tokens - including refresh token!
             const authData = {
@@ -279,11 +228,11 @@ export default function AuthPage() {
                 "https://www.googleapis.com/auth/youtube.readonly"
             ];
 
-            // Use consistent redirect URI - store exactly what we'll use
-            const baseUrl = window.location.origin + window.location.pathname;
+            // Use consistent redirect URI - hardcode the path to match callback
+            const baseUrl = window.location.origin;
             const redirectUri = isExtensionAuth 
-                ? `${baseUrl}?source=extension` // Consistent extension redirect URI
-                : baseUrl; // Regular web auth without params
+                ? `${baseUrl}/auth?source=extension` // Consistent extension redirect URI
+                : `${baseUrl}/auth`; // Regular web auth without params
                 
             const params = new URLSearchParams({
                 client_id: WEB_OAUTH_CLIENT_ID,
@@ -299,7 +248,8 @@ export default function AuthPage() {
             const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
             
             console.log("🔗 Generated OAuth URL:", authUrl);
-            console.log("🔗 Redirect URI:", window.location.href.split('?')[0]);
+            console.log("🔗 OAuth Redirect URI:", redirectUri);
+            console.log("🔑 OAuth Client ID:", WEB_OAUTH_CLIENT_ID);
             
             // Redirect to OAuth (it will come back to this same page)
             window.location.href = authUrl;
