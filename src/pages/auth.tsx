@@ -9,6 +9,7 @@ export default function AuthPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isExtensionAuth, setIsExtensionAuth] = useState(false);
+    const [processedCode, setProcessedCode] = useState<string | null>(null);
 
     const location = useLocation();
 
@@ -42,9 +43,10 @@ export default function AuthPage() {
         //     state: state || "NO"
         // });
 
-        // Handle OAuth callback - support both authorization code and implicit flows
-        if (code && isFromExtension) {
+        // Handle OAuth callback - support both authorization code and implicit flows  
+        if (code && isFromExtension && code !== processedCode) {
             console.log("🔄 Detected authorization code flow callback for extension");
+            setProcessedCode(code); // Mark this code as being processed
             handleAuthorizationCodeCallback(code);
             return;
         } else if (accessToken && idToken && isFromExtension) {
@@ -63,7 +65,7 @@ export default function AuthPage() {
 
         // Extension auth doesn't need Firebase Auth state listener
         return () => {}; // No cleanup needed
-    }, [location, isExtensionAuth]);
+    }, [location, processedCode]); // Removed isExtensionAuth to prevent unnecessary re-runs
 
     const handleAuthorizationCodeCallback = async (code: string) => {
         setLoading(true);
