@@ -69,7 +69,7 @@ export default function AuthPage() {
             return;
         } else if (accessToken && idToken && isFromExtension) {
             console.log("🔄 Detected implicit flow callback for extension (legacy)");
-            handleOAuthCallback(accessToken, idToken, refreshToken);
+            handleOAuthCallback(accessToken, idToken, refreshToken || undefined);
             return;
         } else if (error && isFromExtension) {
             console.log("❌ OAuth error detected:", error);
