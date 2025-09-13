@@ -74,7 +74,7 @@ export default function AuthPage() {
         try {
             // Exchange authorization code for tokens using Firebase Function
             console.log("🔄 Calling Firebase Function to exchange code for tokens");
-            const redirectUri = `${window.location.origin}/auth?source=extension`;
+            const redirectUri = `${window.location.origin}/auth`;
             console.log("🔗 Using redirect URI:", redirectUri);
             console.log("🔑 Using client ID:", WEB_OAUTH_CLIENT_ID);
             console.log("📄 Authorization code:", code.substring(0, 20) + "...");
@@ -233,9 +233,7 @@ export default function AuthPage() {
 
             // Use consistent redirect URI - hardcode the path to match callback
             const baseUrl = window.location.origin;
-            const redirectUri = isExtensionAuth 
-                ? `${baseUrl}/auth?source=extension` // Consistent extension redirect URI
-                : `${baseUrl}/auth`; // Regular web auth without params
+            const redirectUri = `${baseUrl}/auth`; // Use base URL for both extension and web auth
                 
             const params = new URLSearchParams({
                 client_id: WEB_OAUTH_CLIENT_ID,
