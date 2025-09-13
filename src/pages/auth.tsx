@@ -78,6 +78,7 @@ export default function AuthPage() {
             console.log("🔗 Using redirect URI:", redirectUri);
             console.log("🔑 Using client ID:", WEB_OAUTH_CLIENT_ID);
             console.log("📄 Authorization code:", code.substring(0, 20) + "...");
+            console.log("🌐 Current URL when making request:", window.location.href);
             
             const response = await fetch(
                 "https://us-central1-linkx-b2c62.cloudfunctions.net/exchangeCodeForTokens",
