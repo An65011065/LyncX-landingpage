@@ -115,7 +115,7 @@ export default function AuthPage() {
                         data: {
                             code: code,
                             clientId: WEB_OAUTH_CLIENT_ID,
-                            redirectUri: window.location.href.split('?')[0].split('#')[0],
+                            redirectUri: `${window.location.origin}${window.location.pathname}?source=extension`,
                         },
                     }),
                 }
@@ -266,6 +266,7 @@ export default function AuthPage() {
 
         try {
             // Try a simpler approach: use postMessage to the parent window from a direct redirect
+            // Use shared scopes from constants
             const scopes = [
                 "openid",
                 "email",
@@ -278,11 +279,11 @@ export default function AuthPage() {
                 "https://www.googleapis.com/auth/youtube.readonly"
             ];
 
-            // Use the current page as redirect URI with a hash fragment approach
-            // Preserve the source=extension parameter in redirect URI
+            // Use consistent redirect URI - store exactly what we'll use
+            const baseUrl = window.location.origin + window.location.pathname;
             const redirectUri = isExtensionAuth 
-                ? window.location.href.split('#')[0] // Keep the source=extension query param
-                : window.location.href.split('?')[0]; // Regular web auth without params
+                ? `${baseUrl}?source=extension` // Consistent extension redirect URI
+                : baseUrl; // Regular web auth without params
                 
             const params = new URLSearchParams({
                 client_id: WEB_OAUTH_CLIENT_ID,
