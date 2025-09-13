@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 
 // Web Application OAuth Client ID (for universal browser compatibility)
-const WEB_OAUTH_CLIENT_ID = "606602321768-s9h4rdbjtieqnc3lh411h0v15q30kjq5.apps.googleusercontent.com";
+const WEB_OAUTH_CLIENT_ID = "606602321768-s60oi5mdi4900hlt7tsgsl49p0airjmm.apps.googleusercontent.com";
 
 export default function AuthPage() {
     const [loading, setLoading] = useState(false);
