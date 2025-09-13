@@ -21,7 +21,7 @@ export default function AuthPage() {
         // Check for OAuth callback - authorization code flow uses URL params, not hash
         const code = urlParams.get("code");
         const error = urlParams.get("error");
-        // const state = urlParams.get("state"); // Not used for now
+        const state = urlParams.get("state");
         
         // For backwards compatibility, also check hash params (implicit flow)
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
@@ -29,7 +29,8 @@ export default function AuthPage() {
         const idToken = hashParams.get("id_token");
         const refreshToken = hashParams.get("refresh_token");
 
-        const isFromExtension = source === "extension";
+        // Detect extension auth from either source param or state param
+        const isFromExtension = source === "extension" || (state && state.startsWith("extension_"));
         setIsExtensionAuth(isFromExtension);
 
         // console.log("🔍 Auth page params:", {
@@ -240,7 +241,7 @@ export default function AuthPage() {
                 response_type: 'code',  // Authorization code flow for refresh tokens
                 scope: scopes.join(' '),  // Remove offline_access as it's Google-specific
                 redirect_uri: redirectUri,
-                state: 'oauth_' + Math.random().toString(36).substring(2),
+                state: isExtensionAuth ? 'extension_' + Math.random().toString(36).substring(2) : 'oauth_' + Math.random().toString(36).substring(2),
                 include_granted_scopes: 'true',
                 prompt: 'consent',
                 access_type: 'offline'  // This ensures refresh token is provided
