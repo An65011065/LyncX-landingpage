@@ -20,7 +20,7 @@ export default function AuthPage() {
         // Check for OAuth callback - authorization code flow uses URL params, not hash
         const code = urlParams.get("code");
         const error = urlParams.get("error");
-        const state = urlParams.get("state");
+        // const state = urlParams.get("state"); // Not used for now
         
         // For backwards compatibility, also check hash params (implicit flow)
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
