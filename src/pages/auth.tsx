@@ -30,7 +30,7 @@ export default function AuthPage() {
         const refreshToken = hashParams.get("refresh_token");
 
         // Detect extension auth from either source param or state param
-        const isFromExtension = source === "extension" || (state && state.startsWith("extension_"));
+        const isFromExtension = source === "extension" || Boolean(state && state.startsWith("extension_"));
         setIsExtensionAuth(isFromExtension);
 
         // console.log("🔍 Auth page params:", {
