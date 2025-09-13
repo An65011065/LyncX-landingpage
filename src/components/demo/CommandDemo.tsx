@@ -12,6 +12,7 @@ const redditVideo = "/assets/videos/reddit.mp4";
 const sessionVideo = "/assets/videos/session.mp4";
 const helpVideo = "/assets/videos/help.mp4";
 const ytVideo = "/assets/videos/yt.mp4";
+const groupVideo = "/assets/videos/group.mp4";
 
 const DemoHeader: React.FC = () => {
     const [isScrolled, setIsScrolled] = useState(false);
@@ -491,8 +492,8 @@ const BrowserFrame: React.FC<{
     scrollProgress: number;
 }> = ({ browserRef, scrollProgress }) => {
     const [activeVideo, setActiveVideo] = useState<
-        "reddit" | "leetcode" | "email" | "session" | "help" | "yt"
-    >("reddit");
+        "reddit" | "leetcode" | "email" | "session" | "help" | "yt" | "group"
+    >("group");
 
     const videoRefs = useRef<{ [key: string]: HTMLVideoElement | null }>({});
 
@@ -503,6 +504,7 @@ const BrowserFrame: React.FC<{
         session: sessionVideo,
         help: helpVideo,
         yt: ytVideo,
+        group: groupVideo,
     };
 
     // Control video playback based on scroll progress and video changes
@@ -577,9 +579,9 @@ const BrowserFrame: React.FC<{
                         ))}
                     </div>
 
-                    {/* Command buttons (yt, session, email, help) */}
+                    {/* Command buttons (yt, group, session, email, help) */}
                     <div className="flex flex-wrap justify-center gap-2">
-                        {["yt", "session", "email", "help"].map((videoKey) => (
+                        {["yt", "group", "session", "email", "help"].map((videoKey) => (
                             <button
                                 key={videoKey}
                                 onClick={() =>

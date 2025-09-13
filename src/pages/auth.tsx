@@ -37,12 +37,16 @@ export default function AuthPage() {
         const urlParams = new URLSearchParams(location.search);
         const source = urlParams.get("source");
         
-        // Check for OAuth callback in hash (access_token, id_token)
+        // Check for OAuth callback - authorization code flow uses URL params, not hash
+        const code = urlParams.get("code");
+        const error = urlParams.get("error");
+        const state = urlParams.get("state");
+        
+        // For backwards compatibility, also check hash params (implicit flow)
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
         const accessToken = hashParams.get("access_token");
         const idToken = hashParams.get("id_token");
-        const error = hashParams.get("error");
-        const state = hashParams.get("state");
+        const refreshToken = hashParams.get("refresh_token");
 
         const isFromExtension = source === "extension";
         setIsExtensionAuth(isFromExtension);
@@ -50,23 +54,29 @@ export default function AuthPage() {
         console.log("🔍 Auth page params:", {
             source,
             isFromExtension,
+            code: code ? "YES" : "NO",
             accessToken: accessToken ? "YES" : "NO",
-            idToken: idToken ? "YES" : "NO",
+            idToken: idToken ? "YES" : "NO", 
+            refreshToken: refreshToken ? "YES" : "NO",
             error: error || "NO",
             state: state || "NO"
         });
 
-        // Handle OAuth callback - simplified logic
-        if (accessToken && idToken && isFromExtension) {
-            console.log("🔄 Detected OAuth callback for extension");
-            handleOAuthCallback(accessToken, idToken);
+        // Handle OAuth callback - support both authorization code and implicit flows
+        if (code && isFromExtension) {
+            console.log("🔄 Detected authorization code flow callback for extension");
+            handleAuthorizationCodeCallback(code);
+            return;
+        } else if (accessToken && idToken && isFromExtension) {
+            console.log("🔄 Detected implicit flow callback for extension (legacy)");
+            handleOAuthCallback(accessToken, idToken, refreshToken);
             return;
         } else if (error && isFromExtension) {
             console.log("❌ OAuth error detected:", error);
             setError(`OAuth error: ${error}`);
             setLoading(false);
             return;
-        } else if (isFromExtension && !accessToken && !idToken) {
+        } else if (isFromExtension && !code && !accessToken && !idToken) {
             console.log("🔄 Extension auth page loaded, waiting for user action");
         }
 
@@ -86,7 +96,89 @@ export default function AuthPage() {
         return () => unsubscribe();
     }, [location, isExtensionAuth]);
 
-    const handleOAuthCallback = async (accessToken: string, idToken: string) => {
+    const handleAuthorizationCodeCallback = async (code: string) => {
+        setLoading(true);
+        console.log("🔄 Processing authorization code callback...");
+        
+        try {
+            // Exchange authorization code for tokens using Firebase Function
+            console.log("🔄 Calling Firebase Function to exchange code for tokens");
+            
+            const response = await fetch(
+                "https://us-central1-linkx-b2c62.cloudfunctions.net/exchangeCodeForTokens",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        data: {
+                            code: code,
+                            clientId: WEB_OAUTH_CLIENT_ID,
+                            redirectUri: window.location.href.split('?')[0].split('#')[0],
+                        },
+                    }),
+                }
+            );
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error?.message || "Failed to exchange code for tokens");
+            }
+
+            const tokenData = result.data;
+            console.log("✅ Successfully exchanged code for tokens");
+
+            // Get user info using the access token
+            const userInfoResponse = await fetch(
+                "https://www.googleapis.com/oauth2/v2/userinfo",
+                {
+                    headers: {
+                        'Authorization': `Bearer ${tokenData.access_token}`,
+                    },
+                }
+            );
+
+            if (!userInfoResponse.ok) {
+                throw new Error("Failed to get user information");
+            }
+
+            const userInfo = await userInfoResponse.json();
+            
+            // Create auth data structure
+            const authData = {
+                user: {
+                    uid: userInfo.id,
+                    email: userInfo.email,
+                    displayName: userInfo.name,
+                    photoURL: userInfo.picture
+                },
+                accessToken: tokenData.access_token,
+                refreshToken: tokenData.refresh_token, // This should now be available!
+                timestamp: Date.now()
+            };
+
+            console.log("🔄 Storing OAuth data with refresh token:", authData.refreshToken ? "YES" : "NO");
+            localStorage.setItem('lyncx_oauth_complete', JSON.stringify(authData));
+            localStorage.setItem('lyncx_should_redirect', 'true');
+
+            // Dispatch event for extension
+            window.dispatchEvent(new CustomEvent('lyncx_auth_complete', { detail: authData }));
+
+            // Clear URL parameters
+            window.history.replaceState(null, '', window.location.pathname + window.location.search.split('?')[0] + '?source=extension');
+            console.log("✅ Authorization code flow completed successfully");
+
+        } catch (error) {
+            console.error("❌ Authorization code callback error:", error);
+            setError(error instanceof Error ? error.message : "Authorization failed");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleOAuthCallback = async (accessToken: string, idToken: string, refreshToken?: string) => {
         setLoading(true);
         console.log("🔄 Processing OAuth callback...");
         console.log("✅ Got access token and ID token from OAuth");
@@ -129,7 +221,7 @@ export default function AuthPage() {
                 }
             }
 
-            // ALWAYS store OAuth data when we have tokens - no conditions!
+            // ALWAYS store OAuth data when we have tokens - including refresh token!
             const authData = {
                 user: {
                     uid: firebaseUser.uid,
@@ -138,6 +230,7 @@ export default function AuthPage() {
                     photoURL: firebaseUser.photoURL
                 },
                 accessToken: accessToken,
+                refreshToken: refreshToken, // ✅ Now we store the refresh token!
                 timestamp: Date.now()
             };
 
@@ -193,13 +286,13 @@ export default function AuthPage() {
                 
             const params = new URLSearchParams({
                 client_id: WEB_OAUTH_CLIENT_ID,
-                response_type: 'token id_token',
-                scope: scopes.join(' '),
+                response_type: 'code',  // Authorization code flow for refresh tokens
+                scope: scopes.join(' '),  // Remove offline_access as it's Google-specific
                 redirect_uri: redirectUri,
-                nonce: Math.random().toString(36).substring(2),
                 state: 'oauth_' + Math.random().toString(36).substring(2),
                 include_granted_scopes: 'true',
-                prompt: 'consent'
+                prompt: 'consent',
+                access_type: 'offline'  // This ensures refresh token is provided
             });
 
             const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
