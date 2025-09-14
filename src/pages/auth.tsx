@@ -66,7 +66,11 @@ export default function AuthPage() {
             console.log("📄 Authorization code:", code.substring(0, 20) + "...");
             
             // Call our backend OAuth callback endpoint
-            const response = await fetch("http://localhost:3001/api/auth/callback", {
+            const backendUrl = window.location.hostname === 'localhost' 
+                ? 'http://localhost:3001'
+                : window.location.origin; // Use same origin in production
+            
+            const response = await fetch(`${backendUrl}/api/auth/callback`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
