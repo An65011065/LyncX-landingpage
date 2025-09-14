@@ -33,30 +33,24 @@ export default function AuthPage() {
         const isFromExtension = source === "extension" || Boolean(state && state.startsWith("extension_"));
         setIsExtensionAuth(isFromExtension);
 
-        // Handle OAuth callback - support both authorization code and implicit flows  
+        // Handle OAuth callback (authorization code flow only)
         if (code && isFromExtension && code !== processedCode) {
-            console.log("🔄 Detected authorization code flow callback for extension");
-            setProcessedCode(code); // Mark this code as being processed to prevent duplicates
-            handleAuthorizationCodeCallback(code);
-            return;
-        } else if (accessToken && idToken && isFromExtension) {
-            console.log("🔄 Detected implicit flow callback for extension (legacy)");
-            handleOAuthCallback(accessToken, idToken, refreshToken || undefined);
+            console.log("🔄 Processing OAuth callback for extension");
+            setProcessedCode(code);
+            handleAuthCallback(code);
             return;
         } else if (error && isFromExtension) {
-            console.log("❌ OAuth error detected:", error);
+            console.log("❌ OAuth error:", error);
             setError(`OAuth error: ${error}`);
             setLoading(false);
             return;
-        } else if (isFromExtension && !code && !accessToken && !idToken) {
-            console.log("🔄 Extension auth page loaded, waiting for user action");
         }
 
         // Extension auth doesn't need Firebase Auth state listener
         return () => {}; // No cleanup needed
     }, [location.search, location.hash, processedCode]); // Only depend on search and hash, not full location
 
-    const handleAuthorizationCodeCallback = async (code: string) => {
+    const handleAuthCallback = async (code: string) => {
         setLoading(true);
         console.log("🔄 Processing authorization code callback with backend...");
         
@@ -89,24 +83,7 @@ export default function AuthPage() {
             }
 
             console.log("✅ Backend authentication successful - cookies set");
-            
-            // For extension auth, still dispatch event with user data
-            const authData = {
-                user: result.user,
-                timestamp: Date.now(),
-                cookieAuth: true // Flag to indicate cookie-based auth
-            };
-
-            // Store minimal data for extension (cookies handle the real auth)
-            localStorage.setItem('lyncx_oauth_complete', JSON.stringify(authData));
-            localStorage.setItem('lyncx_should_redirect', 'true');
-
-            // Dispatch event for extension
-            window.dispatchEvent(new CustomEvent('lyncx_auth_complete', { detail: authData }));
-
-            // Clear URL parameters
-            window.history.replaceState(null, '', window.location.pathname + window.location.search.split('?')[0] + '?source=extension');
-            console.log("✅ Cookie-based authorization completed successfully");
+            console.log("✅ Extension authentication complete - backend will handle auth state");
 
         } catch (error) {
             console.error("❌ Backend authentication error:", error);
@@ -116,61 +93,6 @@ export default function AuthPage() {
         }
     };
 
-    const handleOAuthCallback = async (accessToken: string, idToken: string, refreshToken?: string) => {
-        setLoading(true);
-        console.log("🔄 Processing OAuth callback...");
-        console.log("✅ Got access token and ID token from OAuth");
-        
-        try {
-            // Decode ID token directly to get user info (no Firebase Auth needed for extension)
-            console.log("🔄 Extracting user info from ID token...");
-            const base64Payload = idToken.split('.')[1];
-            const payload = JSON.parse(atob(base64Payload));
-            console.log("✅ Extracted user info from ID token:", payload.email);
-            
-            const firebaseUser = {
-                uid: payload.sub,
-                email: payload.email,
-                displayName: payload.name,
-                photoURL: payload.picture
-            };
-
-            // ALWAYS store OAuth data when we have tokens - including refresh token!
-            const authData = {
-                user: {
-                    uid: firebaseUser.uid,
-                    email: firebaseUser.email,
-                    displayName: firebaseUser.displayName,
-                    photoURL: firebaseUser.photoURL
-                },
-                accessToken: accessToken,
-                refreshToken: refreshToken, // ✅ Now we store the refresh token!
-                timestamp: Date.now()
-            };
-
-            console.log("🔄 Storing OAuth data immediately...");
-            localStorage.setItem('lyncx_oauth_complete', JSON.stringify(authData));
-            localStorage.setItem('lyncx_should_redirect', 'true');
-            console.log("✅ OAuth data stored successfully");
-
-            // Dispatch event immediately 
-            window.dispatchEvent(new CustomEvent('lyncx_auth_complete', { detail: authData }));
-            console.log("✅ Event dispatched");
-
-            // Let content script handle tab opening to avoid duplicates
-            console.log("✅ Content script will handle extension tab opening");
-
-            // Clear hash from URL
-            window.history.replaceState(null, '', window.location.pathname + window.location.search);
-            console.log("✅ OAuth callback completed successfully");
-            
-        } catch (error) {
-            console.error("❌ OAuth callback error:", error);
-            setError(error instanceof Error ? error.message : "OAuth callback failed");
-        } finally {
-            setLoading(false);
-        }
-    };
 
 
 
