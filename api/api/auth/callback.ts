@@ -34,15 +34,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // Get user info
         const userInfo = await getUserInfo(tokenData.access_token);
         
-        // Create Firebase user document
-        await createOrUpdateUser({
-            uid: userInfo.id,
-            email: userInfo.email,
-            displayName: userInfo.name,
-            photoURL: userInfo.picture,
-            accessToken: tokenData.access_token,
-            refreshToken: tokenData.refresh_token
-        });
+        // Try to create Firebase user document (non-blocking)
+        try {
+            await createOrUpdateUser({
+                uid: userInfo.id,
+                email: userInfo.email,
+                displayName: userInfo.name,
+                photoURL: userInfo.picture,
+                accessToken: tokenData.access_token,
+                refreshToken: tokenData.refresh_token
+            });
+            console.log('✅ Firebase user created successfully');
+        } catch (firebaseError) {
+            console.error('⚠️ Firebase user creation failed (non-critical):', firebaseError);
+            // Continue with authentication even if Firebase fails
+        }
         
         // Set secure HTTP-only cookies using standardized utility
         const cookies = createAuthCookies({
