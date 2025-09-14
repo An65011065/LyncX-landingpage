@@ -33,21 +33,10 @@ export default function AuthPage() {
         const isFromExtension = source === "extension" || Boolean(state && state.startsWith("extension_"));
         setIsExtensionAuth(isFromExtension);
 
-        // console.log("🔍 Auth page params:", {
-        //     source,
-        //     isFromExtension,
-        //     code: code ? "YES" : "NO",
-        //     accessToken: accessToken ? "YES" : "NO",
-        //     idToken: idToken ? "YES" : "NO", 
-        //     refreshToken: refreshToken ? "YES" : "NO",
-        //     error: error || "NO",
-        //     state: state || "NO"
-        // });
-
         // Handle OAuth callback - support both authorization code and implicit flows  
         if (code && isFromExtension && code !== processedCode) {
             console.log("🔄 Detected authorization code flow callback for extension");
-            setProcessedCode(code); // Mark this code as being processed
+            setProcessedCode(code); // Mark this code as being processed to prevent duplicates
             handleAuthorizationCodeCallback(code);
             return;
         } else if (accessToken && idToken && isFromExtension) {
@@ -63,80 +52,48 @@ export default function AuthPage() {
             console.log("🔄 Extension auth page loaded, waiting for user action");
         }
 
-
         // Extension auth doesn't need Firebase Auth state listener
         return () => {}; // No cleanup needed
-    }, [location, processedCode]); // Removed isExtensionAuth to prevent unnecessary re-runs
+    }, [location.search, location.hash, processedCode]); // Only depend on search and hash, not full location
 
     const handleAuthorizationCodeCallback = async (code: string) => {
         setLoading(true);
-        console.log("🔄 Processing authorization code callback...");
+        console.log("🔄 Processing authorization code callback with backend...");
         
         try {
-            // Exchange authorization code for tokens using Firebase Function
-            console.log("🔄 Calling Firebase Function to exchange code for tokens");
             const redirectUri = `${window.location.origin}/auth`;
             console.log("🔗 Using redirect URI:", redirectUri);
-            console.log("🔑 Using client ID:", WEB_OAUTH_CLIENT_ID);
             console.log("📄 Authorization code:", code.substring(0, 20) + "...");
-            console.log("🌐 Current URL when making request:", window.location.href);
             
-            const response = await fetch(
-                "https://us-central1-linkx-b2c62.cloudfunctions.net/exchangeCodeForTokens",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        data: {
-                            code: code,
-                            clientId: WEB_OAUTH_CLIENT_ID,
-                            redirectUri: redirectUri,
-                        },
-                    }),
-                }
-            );
+            // Call our backend OAuth callback endpoint
+            const response = await fetch("http://localhost:3001/api/auth/callback", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                credentials: 'include', // Important: include cookies
+                body: JSON.stringify({
+                    code: code,
+                    redirectUri: redirectUri,
+                }),
+            });
 
             const result = await response.json();
 
             if (!response.ok) {
-                throw new Error(result.error?.message || "Failed to exchange code for tokens");
+                throw new Error(result.error || "Authentication failed");
             }
 
-            const tokenData = result.data;
-            console.log("✅ Successfully exchanged code for tokens");
-
-            // Get user info using the access token
-            const userInfoResponse = await fetch(
-                "https://www.googleapis.com/oauth2/v2/userinfo",
-                {
-                    headers: {
-                        'Authorization': `Bearer ${tokenData.access_token}`,
-                    },
-                }
-            );
-
-            if (!userInfoResponse.ok) {
-                throw new Error("Failed to get user information");
-            }
-
-            const userInfo = await userInfoResponse.json();
+            console.log("✅ Backend authentication successful - cookies set");
             
-            // Create auth data structure
+            // For extension auth, still dispatch event with user data
             const authData = {
-                user: {
-                    uid: userInfo.id,
-                    email: userInfo.email,
-                    displayName: userInfo.name,
-                    photoURL: userInfo.picture
-                },
-                accessToken: tokenData.access_token,
-                refreshToken: tokenData.refresh_token, // This should now be available!
-                timestamp: Date.now()
+                user: result.user,
+                timestamp: Date.now(),
+                cookieAuth: true // Flag to indicate cookie-based auth
             };
 
-            console.log("🔄 Storing OAuth data with refresh token:", authData.refreshToken ? "YES" : "NO");
+            // Store minimal data for extension (cookies handle the real auth)
             localStorage.setItem('lyncx_oauth_complete', JSON.stringify(authData));
             localStorage.setItem('lyncx_should_redirect', 'true');
 
@@ -145,11 +102,11 @@ export default function AuthPage() {
 
             // Clear URL parameters
             window.history.replaceState(null, '', window.location.pathname + window.location.search.split('?')[0] + '?source=extension');
-            console.log("✅ Authorization code flow completed successfully");
+            console.log("✅ Cookie-based authorization completed successfully");
 
         } catch (error) {
-            console.error("❌ Authorization code callback error:", error);
-            setError(error instanceof Error ? error.message : "Authorization failed");
+            console.error("❌ Backend authentication error:", error);
+            setError(error instanceof Error ? error.message : "Authentication failed");
         } finally {
             setLoading(false);
         }
