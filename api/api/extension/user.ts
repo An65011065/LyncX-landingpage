@@ -2,7 +2,6 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { setCorsHeaders, handleOptions } from '../../src/utils/cors';
 import { COOKIE_CONFIG } from '../../src/utils/cookies';
 import { getUserInfo } from '../../src/services/oauth';
-import { getUser } from '../../src/services/firebase';
 
 function parseCookies(cookieHeader: string): Record<string, string> {
     const cookies: Record<string, string> = {};
@@ -56,7 +55,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
         
         // Try to get enhanced user data from Firebase
-        let userData = {
+        let userData: any = {
             uid: userInfo.id,
             email: userInfo.email,
             displayName: userInfo.name,
