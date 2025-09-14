@@ -16,35 +16,49 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     try {
         // STEP 1: Environment Variable Test
-        console.log('🔍 Step 1: Testing environment variable...');
-        const envVar = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+        console.log('🔍 Step 1: Testing individual environment variables...');
+        const projectId = process.env.FIREBASE_PROJECT_ID;
+        const privateKey = process.env.FIREBASE_PRIVATE_KEY;
+        const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+        const privateKeyId = process.env.FIREBASE_PRIVATE_KEY_ID;
+        const clientId = process.env.FIREBASE_CLIENT_ID;
         
-        if (!envVar) {
+        if (!projectId || !privateKey || !clientEmail) {
             results.step1_env = {
                 success: false,
-                error: 'Environment variable FIREBASE_SERVICE_ACCOUNT_KEY not found'
+                error: 'Missing required Firebase environment variables',
+                missing: {
+                    project_id: !projectId,
+                    private_key: !privateKey,
+                    client_email: !clientEmail
+                }
             };
             return res.status(200).json(results);
         }
 
-        let serviceAccount;
-        try {
-            serviceAccount = JSON.parse(envVar);
-            results.step1_env = {
-                success: true,
-                project_id: serviceAccount.project_id,
-                client_email: serviceAccount.client_email,
-                has_private_key: !!serviceAccount.private_key
-            };
-            console.log('✅ Step 1: Environment variable OK');
-        } catch (parseError) {
-            results.step1_env = {
-                success: false,
-                error: 'JSON parsing failed',
-                details: parseError instanceof Error ? parseError.message : 'Unknown error'
-            };
-            return res.status(200).json(results);
-        }
+        const serviceAccount = {
+            type: "service_account",
+            project_id: projectId,
+            private_key_id: privateKeyId,
+            private_key: privateKey.replace(/\\n/g, '\n'), // Fix escaped newlines
+            client_email: clientEmail,
+            client_id: clientId,
+            auth_uri: "https://accounts.google.com/o/oauth2/auth",
+            token_uri: "https://oauth2.googleapis.com/token",
+            auth_provider_x509_cert_url: "https://www.googleapis.com/oauth2/v1/certs",
+            client_x509_cert_url: `https://www.googleapis.com/robot/v1/metadata/x509/${encodeURIComponent(clientEmail)}`
+        };
+        
+        results.step1_env = {
+            success: true,
+            project_id: projectId,
+            client_email: clientEmail,
+            has_private_key: !!privateKey,
+            has_private_key_id: !!privateKeyId,
+            has_client_id: !!clientId,
+            private_key_preview: privateKey.substring(0, 50) + '...'
+        };
+        console.log('✅ Step 1: Environment variables OK');
 
         // STEP 2: Firebase Init Test
         console.log('🔍 Step 2: Testing Firebase initialization...');
@@ -54,7 +68,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             if (existingApps.length === 0) {
                 app = initializeApp({
                     credential: cert(serviceAccount),
-                    projectId: serviceAccount.project_id
+                    projectId: projectId
                 });
             } else {
                 app = existingApps[0];

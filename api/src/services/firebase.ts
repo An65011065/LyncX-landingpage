@@ -15,40 +15,54 @@ export function initializeFirebaseAdmin(): void {
         if (getApps().length > 0) {
             console.log('🔥 Firebase Admin already initialized');
             adminApp = getApps()[0];
-        } else {
-            // Initialize with service account credentials
-            // In production, use environment variables for the service account
-            const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY 
-                ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
-                : {
-                    // Development fallback - replace with actual service account
-                    projectId: "linkx-b2c62",
-                    // Add your service account credentials here or use environment variables
-                };
-
-            if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
-                adminApp = initializeApp({
-                    credential: cert(serviceAccount),
-                    projectId: "linkx-b2c62"
-                });
-            } else {
-                // For development, you can use application default credentials
-                // or initialize without credentials (will use default project)
-                adminApp = initializeApp({
-                    projectId: "linkx-b2c62"
-                });
-            }
-            
-            console.log('🔥 Firebase Admin initialized');
+            db = getFirestore(adminApp);
+            auth = getAuth(adminApp);
+            return;
         }
 
+        console.log('🔄 Initializing Firebase Admin...');
+        
+        // Initialize with individual environment variables
+        const projectId = process.env.FIREBASE_PROJECT_ID;
+        const privateKey = process.env.FIREBASE_PRIVATE_KEY;
+        const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+        
+        if (projectId && privateKey && clientEmail) {
+            console.log('📋 Using individual environment variables');
+            
+            const serviceAccount = {
+                type: "service_account",
+                project_id: projectId,
+                private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
+                private_key: privateKey.replace(/\\n/g, '\n'), // Fix escaped newlines
+                client_email: clientEmail,
+                client_id: process.env.FIREBASE_CLIENT_ID,
+                auth_uri: "https://accounts.google.com/o/oauth2/auth",
+                token_uri: "https://oauth2.googleapis.com/token",
+                auth_provider_x509_cert_url: "https://www.googleapis.com/oauth2/v1/certs",
+                client_x509_cert_url: `https://www.googleapis.com/robot/v1/metadata/x509/${encodeURIComponent(clientEmail)}`
+            };
+            
+            adminApp = initializeApp({
+                credential: cert(serviceAccount),
+                projectId: projectId
+            });
+        } else {
+            console.log('⚠️ Missing Firebase environment variables, using default credentials');
+            adminApp = initializeApp({
+                projectId: "linkx-b2c62"
+            });
+        }
+        
         // Initialize services
         db = getFirestore(adminApp);
         auth = getAuth(adminApp);
+        
+        console.log('✅ Firebase Admin initialized successfully');
 
     } catch (error) {
         console.error('❌ Failed to initialize Firebase Admin:', error);
-        throw error;
+        // Don't throw - allow the API to work without Firebase for now
     }
 }
 
