@@ -1,12 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-
-function setCorsHeaders(res: VercelResponse) {
-    res.setHeader('Access-Control-Allow-Origin', 'https://www.lyncx.ai, https://lyncx.ai, http://localhost:5173');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Cookie');
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Access-Control-Expose-Headers', 'Set-Cookie');
-}
+import { setCorsHeaders, handleOptions } from '../../src/utils/cors';
+import { COOKIE_CONFIG } from '../../src/utils/cookies';
+import { getUserInfo } from '../../src/services/oauth';
 
 function parseCookies(cookieHeader: string): Record<string, string> {
     const cookies: Record<string, string> = {};
@@ -21,10 +16,11 @@ function parseCookies(cookieHeader: string): Record<string, string> {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-    setCorsHeaders(res);
+    const origin = req.headers.origin as string;
+    setCorsHeaders(res, origin);
 
     if (req.method === 'OPTIONS') {
-        res.status(200).end();
+        handleOptions(res, origin);
         return;
     }
 
@@ -34,9 +30,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const cookies = parseCookies(req.headers.cookie as string);
-    const accessToken = cookies.lyncx_access_token;
-    const userId = cookies.lyncx_user_id;
-    
+    const accessToken = cookies[COOKIE_CONFIG.ACCESS_TOKEN.name];
+    const userId = cookies[COOKIE_CONFIG.USER_ID.name];
+
     if (!accessToken || !userId) {
         res.status(401).json({
             error: 'Authentication required',
@@ -44,54 +40,37 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         });
         return;
     }
-    
+
     try {
-        // Get user info from Google API using stored access token
-        const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
-            headers: {
-                'Authorization': `Bearer ${accessToken}`
-            }
-        });
+        // Get user info from Google API using standardized service
+        const userInfo = await getUserInfo(accessToken);
         
-        if (userInfoResponse.ok) {
-            const userInfo = await userInfoResponse.json();
-            res.status(200).json({
-                success: true,
-                user: {
-                    uid: userInfo.id,
-                    email: userInfo.email,
-                    displayName: userInfo.name,
-                    photoURL: userInfo.picture,
-                    authenticated: true,
-                    timestamp: new Date().toISOString()
-                }
+        // Verify that the token's user ID matches our stored user ID
+        if (userInfo.id !== userId) {
+            res.status(401).json({
+                error: 'Authentication required',
+                message: 'Token user ID mismatch'
             });
-        } else {
-            // Fallback to basic info if API call fails
-            res.status(200).json({
-                success: true,
-                user: {
-                    uid: userId,
-                    email: null,
-                    displayName: null,
-                    photoURL: null,
-                    authenticated: true,
-                    timestamp: new Date().toISOString()
-                }
-            });
+            return;
         }
-    } catch (error) {
-        // Fallback to basic info if error occurs
+        
         res.status(200).json({
             success: true,
             user: {
-                uid: userId,
-                email: null,
-                displayName: null,
-                photoURL: null,
+                uid: userInfo.id,
+                email: userInfo.email,
+                displayName: userInfo.name,
+                photoURL: userInfo.picture,
                 authenticated: true,
                 timestamp: new Date().toISOString()
             }
+        });
+        
+    } catch (error) {
+        console.error('❌ User info fetch error:', error);
+        res.status(401).json({
+            error: 'Authentication required',
+            message: 'Invalid or expired token'
         });
     }
 }

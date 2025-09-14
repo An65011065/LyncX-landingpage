@@ -1,12 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-
-function setCorsHeaders(res: VercelResponse) {
-    res.setHeader('Access-Control-Allow-Origin', 'https://www.lyncx.ai, https://lyncx.ai, http://localhost:5173');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Cookie');
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Access-Control-Expose-Headers', 'Set-Cookie');
-}
+import { setCorsHeaders, handleOptions } from '../../src/utils/cors';
+import { COOKIE_CONFIG } from '../../src/utils/cookies';
 
 function parseCookies(cookieHeader: string): Record<string, string> {
     const cookies: Record<string, string> = {};
@@ -21,10 +15,11 @@ function parseCookies(cookieHeader: string): Record<string, string> {
 }
 
 export default function handler(req: VercelRequest, res: VercelResponse) {
-    setCorsHeaders(res);
+    const origin = req.headers.origin as string;
+    setCorsHeaders(res, origin);
 
     if (req.method === 'OPTIONS') {
-        res.status(200).end();
+        handleOptions(res, origin);
         return;
     }
 
@@ -34,8 +29,8 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const cookies = parseCookies(req.headers.cookie as string);
-    const accessToken = cookies.lyncx_access_token;
-    const userId = cookies.lyncx_user_id;
+    const accessToken = cookies[COOKIE_CONFIG.ACCESS_TOKEN.name];
+    const userId = cookies[COOKIE_CONFIG.USER_ID.name];
     
     if (!accessToken || !userId) {
         res.status(401).json({

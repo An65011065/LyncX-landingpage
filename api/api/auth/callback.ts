@@ -1,19 +1,14 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { exchangeCodeForTokens, getUserInfo } from '../../src/services/oauth';
-
-function setCorsHeaders(res: VercelResponse) {
-    res.setHeader('Access-Control-Allow-Origin', 'https://www.lyncx.ai, https://lyncx.ai, http://localhost:5173');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Cookie');
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Access-Control-Expose-Headers', 'Set-Cookie');
-}
+import { createAuthCookies } from '../../src/utils/cookies';
+import { setCorsHeaders, handleOptions } from '../../src/utils/cors';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-    setCorsHeaders(res);
+    const origin = req.headers.origin as string;
+    setCorsHeaders(res, origin);
 
     if (req.method === 'OPTIONS') {
-        res.status(200).end();
+        handleOptions(res, origin);
         return;
     }
 
@@ -38,24 +33,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // Get user info
         const userInfo = await getUserInfo(tokenData.access_token);
         
-        // Set secure HTTP-only cookies
-        const cookieOptions = {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax' as const,
-            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-            path: '/'
-        };
-        
-        const accessTokenCookie = `lyncx_access_token=${tokenData.access_token}; HttpOnly; ${process.env.NODE_ENV === 'production' ? 'Secure;' : ''} SameSite=Lax; Max-Age=${60 * 60}; Path=/`;
-        const userIdCookie = `lyncx_user_id=${userInfo.id}; HttpOnly; ${process.env.NODE_ENV === 'production' ? 'Secure;' : ''} SameSite=Lax; Max-Age=${7 * 24 * 60 * 60}; Path=/`;
-        
-        const cookies = [accessTokenCookie, userIdCookie];
-        
-        if (tokenData.refresh_token) {
-            const refreshTokenCookie = `lyncx_refresh_token=${tokenData.refresh_token}; HttpOnly; ${process.env.NODE_ENV === 'production' ? 'Secure;' : ''} SameSite=Lax; Max-Age=${7 * 24 * 60 * 60}; Path=/`;
-            cookies.push(refreshTokenCookie);
-        }
+        // Set secure HTTP-only cookies using standardized utility
+        const cookies = createAuthCookies({
+            access_token: tokenData.access_token,
+            refresh_token: tokenData.refresh_token,
+            user_id: userInfo.id
+        });
         
         res.setHeader('Set-Cookie', cookies);
         

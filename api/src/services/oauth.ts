@@ -28,8 +28,8 @@ export async function exchangeCodeForTokens(
     const tokenUrl = "https://oauth2.googleapis.com/token";
 
     const params = new URLSearchParams({
-        client_id: GOOGLE_OAUTH_CLIENT_ID,
-        client_secret: GOOGLE_OAUTH_CLIENT_SECRET,
+        client_id: GOOGLE_OAUTH_CLIENT_ID!,
+        client_secret: GOOGLE_OAUTH_CLIENT_SECRET!,
         code,
         grant_type: "authorization_code",
         redirect_uri: redirectUri,
@@ -48,7 +48,8 @@ export async function exchangeCodeForTokens(
         throw new Error(`Token exchange failed: ${error}`);
     }
 
-    return response.json();
+    const tokenData = await response.json();
+    return tokenData as TokenResponse;
 }
 
 export async function getUserInfo(accessToken: string): Promise<UserInfo> {
@@ -65,5 +66,6 @@ export async function getUserInfo(accessToken: string): Promise<UserInfo> {
         throw new Error("Failed to get user info");
     }
 
-    return response.json();
+    const userData = await response.json();
+    return userData as UserInfo;
 }

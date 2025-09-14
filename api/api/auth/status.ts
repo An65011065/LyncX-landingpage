@@ -1,25 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-
-function setCorsHeaders(res: VercelResponse, origin?: string) {
-    // Allow requests from extension, website, and localhost
-    const allowedOrigins = [
-        'https://www.lyncx.ai',
-        'https://lyncx.ai', 
-        'http://localhost:5173',
-        'chrome-extension://lljcelbdgpjianpjkpdckkmgkbfhoccj'
-    ];
-    
-    if (origin && allowedOrigins.includes(origin)) {
-        res.setHeader('Access-Control-Allow-Origin', origin);
-    } else {
-        res.setHeader('Access-Control-Allow-Origin', 'https://www.lyncx.ai');
-    }
-    
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Cookie');
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Access-Control-Expose-Headers', 'Set-Cookie');
-}
+import { setCorsHeaders, handleOptions } from '../../src/utils/cors';
+import { COOKIE_CONFIG } from '../../src/utils/cookies';
+import { getUserInfo } from '../../src/services/oauth';
 
 function parseCookies(cookieHeader: string): Record<string, string> {
     const cookies: Record<string, string> = {};
@@ -33,12 +15,12 @@ function parseCookies(cookieHeader: string): Record<string, string> {
     return cookies;
 }
 
-export default function handler(req: VercelRequest, res: VercelResponse) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
     const origin = req.headers.origin as string;
     setCorsHeaders(res, origin);
 
     if (req.method === 'OPTIONS') {
-        res.status(200).end();
+        handleOptions(res, origin);
         return;
     }
 
@@ -48,12 +30,32 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const cookies = parseCookies(req.headers.cookie as string);
-    const accessToken = cookies.lyncx_access_token;
-    const userId = cookies.lyncx_user_id;
+    const accessToken = cookies[COOKIE_CONFIG.ACCESS_TOKEN.name];
+    const userId = cookies[COOKIE_CONFIG.USER_ID.name];
     
-    if (accessToken && userId) {
-        res.status(200).json({ authenticated: true, userId });
-    } else {
+    if (!accessToken || !userId) {
+        res.status(200).json({ authenticated: false });
+        return;
+    }
+
+    try {
+        // Validate the access token by fetching user info from Google
+        const userInfo = await getUserInfo(accessToken);
+        
+        // Verify that the token's user ID matches our stored user ID
+        if (userInfo.id === userId) {
+            res.status(200).json({ 
+                authenticated: true, 
+                userId: userInfo.id,
+                email: userInfo.email
+            });
+        } else {
+            // User ID mismatch - tokens may be compromised
+            res.status(200).json({ authenticated: false });
+        }
+    } catch (error) {
+        // Token is invalid or expired
+        console.log('Token validation failed:', error instanceof Error ? error.message : 'Unknown error');
         res.status(200).json({ authenticated: false });
     }
 }
