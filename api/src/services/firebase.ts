@@ -139,7 +139,6 @@ export async function updateUserLastLogin(uid: string): Promise<void> {
     }
 }
 
-// Initialize Firebase Admin on module load
-initializeFirebaseAdmin();
+// Firebase Admin initialized lazily when functions are called
 
 export { db, auth };
