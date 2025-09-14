@@ -23,11 +23,8 @@ export default function AuthPage() {
         const error = urlParams.get("error");
         const state = urlParams.get("state");
         
-        // For backwards compatibility, also check hash params (implicit flow)
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        const accessToken = hashParams.get("access_token");
-        const idToken = hashParams.get("id_token");
-        const refreshToken = hashParams.get("refresh_token");
+        // Note: We're using authorization code flow, not implicit flow
+        // Hash params are no longer needed for our OAuth implementation
 
         // Detect extension auth from either source param or state param
         const isFromExtension = source === "extension" || Boolean(state && state.startsWith("extension_"));
