@@ -2,6 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { exchangeCodeForTokens, getUserInfo } from '../../src/services/oauth';
 import { createAuthCookies } from '../../src/utils/cookies';
 import { setCorsHeaders, handleOptions } from '../../src/utils/cors';
+import { createOrUpdateUser } from '../../src/services/firebase';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     const origin = req.headers.origin as string;
@@ -32,6 +33,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         
         // Get user info
         const userInfo = await getUserInfo(tokenData.access_token);
+        
+        // Create Firebase user document
+        await createOrUpdateUser({
+            uid: userInfo.id,
+            email: userInfo.email,
+            displayName: userInfo.name,
+            photoURL: userInfo.picture,
+            accessToken: tokenData.access_token,
+            refreshToken: tokenData.refresh_token
+        });
         
         // Set secure HTTP-only cookies using standardized utility
         const cookies = createAuthCookies({

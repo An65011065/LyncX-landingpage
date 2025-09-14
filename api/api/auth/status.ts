@@ -2,6 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { setCorsHeaders, handleOptions } from '../../src/utils/cors';
 import { COOKIE_CONFIG } from '../../src/utils/cookies';
 import { getUserInfo } from '../../src/services/oauth';
+import { updateUserLastLogin } from '../../src/services/firebase';
 
 function parseCookies(cookieHeader: string): Record<string, string> {
     const cookies: Record<string, string> = {};
@@ -44,6 +45,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         
         // Verify that the token's user ID matches our stored user ID
         if (userInfo.id === userId) {
+            // Update last login time in Firebase
+            updateUserLastLogin(userInfo.id).catch(error => {
+                console.log('Failed to update last login:', error);
+            });
+            
             res.status(200).json({ 
                 authenticated: true, 
                 userId: userInfo.id,

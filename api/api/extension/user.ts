@@ -2,6 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { setCorsHeaders, handleOptions } from '../../src/utils/cors';
 import { COOKIE_CONFIG } from '../../src/utils/cookies';
 import { getUserInfo } from '../../src/services/oauth';
+import { getUser } from '../../src/services/firebase';
 
 function parseCookies(cookieHeader: string): Record<string, string> {
     const cookies: Record<string, string> = {};
@@ -54,16 +55,34 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return;
         }
         
+        // Try to get enhanced user data from Firebase
+        let userData = {
+            uid: userInfo.id,
+            email: userInfo.email,
+            displayName: userInfo.name,
+            photoURL: userInfo.picture,
+            authenticated: true,
+            timestamp: new Date().toISOString()
+        };
+        
+        try {
+            const firebaseUser = await getUser(userInfo.id);
+            if (firebaseUser) {
+                userData = {
+                    ...userData,
+                    plan: firebaseUser.plan || { type: 'free' },
+                    createdAt: firebaseUser.createdAt,
+                    lastLoginAt: firebaseUser.lastLoginAt
+                };
+            }
+        } catch (firebaseError) {
+            console.log('Could not fetch Firebase user data:', firebaseError);
+            // Continue with Google data only
+        }
+        
         res.status(200).json({
             success: true,
-            user: {
-                uid: userInfo.id,
-                email: userInfo.email,
-                displayName: userInfo.name,
-                photoURL: userInfo.picture,
-                authenticated: true,
-                timestamp: new Date().toISOString()
-            }
+            user: userData
         });
         
     } catch (error) {
