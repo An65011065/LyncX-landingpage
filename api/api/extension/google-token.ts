@@ -58,7 +58,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return;
         }
 
-        const userInfo = await response.json();
+        const userInfo = await response.json() as { id: string; email: string; name?: string };
         
         // Verify that the token's user ID matches our stored user ID
         if (userInfo.id !== userId) {

@@ -154,7 +154,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return;
         }
 
-        const userInfo = await userResponse.json();
+        const userInfo = await userResponse.json() as { id: string; email: string; name?: string };
         
         if (userInfo.id !== userId) {
             res.status(401).json({
