@@ -24,8 +24,7 @@ interface UserRateLimit {
 // OpenAI Assistant IDs (from original Firebase Functions)
 const ASSISTANT_IDS = {
     page_analysis: "asst_2yxqDOmlVY4yURQROnLdIuKD",
-    generalAsk: "asst_OLQ63uhQ7HhKPr5EfZxzDdWy",
-    browsing: "asst_OLQ63uhQ7HhKPr5EfZxzDdWy" // Default to generalAsk for browsing
+    generalAsk: "asst_OLQ63uhQ7HhKPr5EfZxzDdWy"
 };
 
 // OpenAI client (will be initialized with API key)
@@ -40,53 +39,6 @@ function initializeOpenAI(apiKey: string) {
     return openai;
 }
 
-// Create clean CSV for browsing data (from original Firebase Functions)
-function createCleanCSV(data: any) {
-    const visits = data.today?.allVisits || [];
-    const sortedVisits = [...visits].sort((a: any, b: any) => b.startTime - a.startTime);
-    
-    const headers = [
-        "domain",
-        "title", 
-        "date",
-        "readableTime",
-        "activeTimeMinutes",
-    ];
-    
-    const rows = sortedVisits.map((visit: any) => {
-        const date = new Date(visit.startTime);
-        const timeDisplay = visit.readableTime || 
-            date.toLocaleTimeString("en-US", {
-                hour: "2-digit",
-                minute: "2-digit", 
-                hour12: false,
-            });
-        
-        return [
-            visit.domain || "",
-            (visit.title || "").replace(/"/g, '""'),
-            date.toISOString().split("T")[0],
-            timeDisplay,
-            visit.activeTimeMinutes || 0,
-        ];
-    });
-    
-    const summaryRow = [
-        "SUMMARY_DATA",
-        `Total visits: ${sortedVisits.length}, Active minutes: ${data.today?.totalActiveMinutes || 0}, Sessions: ${data.today?.tabSessions || 0}`,
-        data.today?.date || new Date().toISOString().split("T")[0],
-        "Summary", 
-        data.today?.totalActiveMinutes || 0,
-    ];
-    
-    const csvLines = [
-        headers.join(","),
-        summaryRow.map((cell: any) => `"${cell}"`).join(","),
-        ...rows.map((row: any) => row.map((cell: any) => `"${cell}"`).join(",")),
-    ];
-    
-    return csvLines.join("\n");
-}
 
 const userRateLimits = new Map<string, UserRateLimit>();
 
@@ -202,29 +154,6 @@ ${pageContent.content}
 User Question: ${userMessage}`;
 
             console.log("Page content message length:", messageContent.length);
-        }
-        // Upload CSV for browsing conversations (parallel with thread creation)
-        else if (browsingData && assistantType === "browsing") {
-            console.log("Uploading CSV file for browsing data...");
-            const csvContent = createCleanCSV(browsingData);
-            const timestamp = new Date().toISOString().split("T")[0];
-            const fileName = `browsing-data-${timestamp}.csv`;
-            console.log("Generated CSV length:", csvContent.length);
-
-            const fileUploadPromise = (async () => {
-                // For Vercel, we'll use Buffer instead of filesystem
-                const buffer = Buffer.from(csvContent, 'utf8');
-                const file = await openai.files.create({
-                    file: new File([buffer], fileName, { type: 'text/csv' }),
-                    purpose: "assistants",
-                });
-
-                console.log("File uploaded:", file.id);
-                return file.id;
-            })();
-            
-            operations.push(fileUploadPromise);
-            messageContent = `Your browsing data has been uploaded as a CSV file for analysis.\n\nUser question: ${userMessage}`;
         }
 
         // Execute operations in parallel
@@ -396,8 +325,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return;
     }
 
-    // Validate assistant type
-    const validTypes = ['page_analysis', 'generalAsk', 'browsing', 'general'];
+    // Validate assistant type  
+    const validTypes = ['page_analysis', 'generalAsk'];
     if (!validTypes.includes(finalAssistantType)) {
         res.status(400).json({
             success: false,
