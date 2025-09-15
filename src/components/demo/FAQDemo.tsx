@@ -37,7 +37,7 @@ const FAQDemo: React.FC = () => {
         },
         {
             question: "Is LyncX free?",
-            answer: "Yes, LyncX is completely free for now! We're focused on building something amazing for you first. If we ever introduce paid features, we'll never charge you without clear notice and your explicit consent.",
+            answer: "LyncX offers a 2-week free trial, after which there will be a monthly cost based on your selected plan.",
         },
     ];
 
