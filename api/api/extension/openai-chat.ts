@@ -1,18 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { setCorsHeaders, handleOptions } from '../../src/utils/cors';
-import { COOKIE_CONFIG } from '../../src/utils/cookies';
-
-function parseCookies(cookieHeader: string): Record<string, string> {
-    const cookies: Record<string, string> = {};
-    if (!cookieHeader) return cookies;
-    
-    cookieHeader.split(';').forEach(cookie => {
-        const [name, ...rest] = cookie.trim().split('=');
-        cookies[name] = rest.join('=');
-    });
-    
-    return cookies;
-}
 
 // In-memory rate limiting storage (simple implementation)
 interface UserRateLimit {
@@ -43,8 +30,8 @@ function initializeOpenAI(apiKey: string) {
 const userRateLimits = new Map<string, UserRateLimit>();
 
 // Rate limiting constants
-const DAILY_LIMIT = 20;
-const RATE_LIMIT_MS = 15000; // 15 seconds between requests (allows ~3 per minute)
+const DAILY_LIMIT = 20; // Daily request limit
+const RATE_LIMIT_MS = 5000; // 5 seconds between requests
 // Removed character limit - users can send messages of any length
 
 function getTodayString(): string {
@@ -241,7 +228,7 @@ User Question: ${userMessage}`;
                     } else if (retryResult.status === "failed") {
                         throw new Error(`Retry also failed: ${retryResult.last_error?.message}`);
                     } else {
-                        await new Promise((resolve) => setTimeout(resolve, 1000));
+                        await new Promise((resolve) => setTimeout(resolve, 500)); // Reduced from 1000ms
                     }
                 }
                 if (!retryCompleted) {
@@ -253,7 +240,7 @@ User Question: ${userMessage}`;
         } else if (runResult.status === "expired") {
             throw new Error("Assistant run expired");
         } else {
-            await new Promise((resolve) => setTimeout(resolve, 1000));
+            await new Promise((resolve) => setTimeout(resolve, 500)); // Reduced from 1000ms
         }
     }
 
@@ -345,6 +332,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     try {
         // Verify user authentication by checking Google API first
+        const authStartTime = Date.now();
         const userResponse = await fetch('https://www.googleapis.com/oauth2/v1/userinfo', {
             headers: {
                 'Authorization': `Bearer ${accessToken}`
@@ -363,9 +351,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         const userInfo = await userResponse.json() as { id: string; email: string; name?: string };
         const userId = userInfo.id;
+        const authEndTime = Date.now();
         
         console.log('✅ User authenticated:', userInfo.email);
         console.log('👤 User ID:', userId);
+        console.log('⏱️ Auth verification took:', authEndTime - authStartTime, 'ms');
 
         // Check rate limits after getting userId
         const rateLimitCheck = checkRateLimit(userId);
@@ -420,6 +410,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 remaining: remaining,
                 dailyLimit: DAILY_LIMIT,
                 resetTime: 'tomorrow at midnight'
+            },
+            timing: {
+                authMs: authEndTime - authStartTime
             }
         });
 
