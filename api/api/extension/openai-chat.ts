@@ -277,6 +277,11 @@ User Question: ${userMessage}`;
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     const origin = req.headers.origin as string;
+    console.log('🌐 Request origin:', origin);
+    console.log('🔗 All headers:', Object.keys(req.headers));
+    console.log('🔑 Auth header:', req.headers.authorization ? 'present' : 'missing');
+    console.log('👤 User ID header:', req.headers['x-user-id'] ? 'present' : 'missing');
+    
     setCorsHeaders(res, origin);
 
     if (req.method === 'OPTIONS') {
@@ -289,34 +294,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return;
     }
 
-    // Support both cookie-based auth (website) and header-based auth (Chrome extension)
-    let accessToken: string;
-    let userId: string;
-    
-    // Try Chrome extension header auth first
+    // Simple auth: just get the access token from Authorization header
     const authHeader = req.headers.authorization as string;
-    const userIdHeader = req.headers['x-user-id'] as string;
     
-    if (authHeader && authHeader.startsWith('Bearer ') && userIdHeader) {
-        accessToken = authHeader.substring(7);
-        userId = userIdHeader;
-        console.log('Using Chrome extension authentication');
-    } else {
-        // Fall back to cookie auth for website
-        const cookies = parseCookies(req.headers.cookie as string);
-        accessToken = cookies[COOKIE_CONFIG.ACCESS_TOKEN.name];
-        userId = cookies[COOKIE_CONFIG.USER_ID.name];
-        console.log('Using cookie-based authentication');
-    }
-
-    if (!accessToken || !userId) {
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        console.log('❌ Missing or invalid Authorization header');
         res.status(401).json({
             success: false,
             error: 'Authentication required',
-            message: 'No valid session found'
+            message: 'Missing Authorization header'
         });
         return;
     }
+
+    const accessToken = authHeader.substring(7);
+    console.log('✅ Access token extracted, length:', accessToken.length);
 
     // Parse request body (matching Firebase Functions format)
     const { 
@@ -371,6 +363,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         });
 
         if (!userResponse.ok) {
+            console.log('❌ Google API returned:', userResponse.status);
             res.status(401).json({
                 success: false,
                 error: 'Authentication required',
@@ -380,15 +373,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
 
         const userInfo = await userResponse.json() as { id: string; email: string; name?: string };
+        const userId = userInfo.id;
         
-        if (userInfo.id !== userId) {
-            res.status(401).json({
-                success: false,
-                error: 'Authentication required',
-                message: 'Token user ID mismatch'
-            });
-            return;
-        }
+        console.log('✅ User authenticated:', userInfo.email);
+        console.log('👤 User ID:', userId);
 
         // Get OpenAI API key from environment
         const openaiApiKey = process.env.OPENAI_API_KEY;
