@@ -343,19 +343,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return;
     }
 
-    // Check rate limits
-    const rateLimitCheck = checkRateLimit(userId);
-    if (!rateLimitCheck.allowed) {
-        res.status(429).json({
-            success: false,
-            error: rateLimitCheck.error,
-            rateLimited: true
-        });
-        return;
-    }
-
     try {
-        // Verify user authentication by checking Google API
+        // Verify user authentication by checking Google API first
         const userResponse = await fetch('https://www.googleapis.com/oauth2/v1/userinfo', {
             headers: {
                 'Authorization': `Bearer ${accessToken}`
@@ -377,6 +366,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         
         console.log('✅ User authenticated:', userInfo.email);
         console.log('👤 User ID:', userId);
+
+        // Check rate limits after getting userId
+        const rateLimitCheck = checkRateLimit(userId);
+        if (!rateLimitCheck.allowed) {
+            res.status(429).json({
+                success: false,
+                error: rateLimitCheck.error,
+                rateLimited: true
+            });
+            return;
+        }
 
         // Get OpenAI API key from environment
         const openaiApiKey = process.env.OPENAI_API_KEY;
