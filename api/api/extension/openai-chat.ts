@@ -289,9 +289,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return;
     }
 
-    const cookies = parseCookies(req.headers.cookie as string);
-    const accessToken = cookies[COOKIE_CONFIG.ACCESS_TOKEN.name];
-    const userId = cookies[COOKIE_CONFIG.USER_ID.name];
+    // Support both cookie-based auth (website) and header-based auth (Chrome extension)
+    let accessToken: string;
+    let userId: string;
+    
+    // Try Chrome extension header auth first
+    const authHeader = req.headers.authorization as string;
+    const userIdHeader = req.headers['x-user-id'] as string;
+    
+    if (authHeader && authHeader.startsWith('Bearer ') && userIdHeader) {
+        accessToken = authHeader.substring(7);
+        userId = userIdHeader;
+        console.log('Using Chrome extension authentication');
+    } else {
+        // Fall back to cookie auth for website
+        const cookies = parseCookies(req.headers.cookie as string);
+        accessToken = cookies[COOKIE_CONFIG.ACCESS_TOKEN.name];
+        userId = cookies[COOKIE_CONFIG.USER_ID.name];
+        console.log('Using cookie-based authentication');
+    }
 
     if (!accessToken || !userId) {
         res.status(401).json({
