@@ -27,7 +27,7 @@ export function setCorsHeaders(res: VercelResponse, origin?: string): void {
     );
     res.setHeader(
         "Access-Control-Allow-Headers",
-        "Content-Type, Authorization, Cookie",
+        "Content-Type, Authorization, Cookie, x-user-id",
     );
     res.setHeader("Access-Control-Allow-Credentials", "true");
     res.setHeader("Access-Control-Expose-Headers", "Set-Cookie");
