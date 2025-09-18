@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
+import { Link } from "react-router-dom";
 import FAQDemo from "./FAQDemo";
 import FooterDemo from "./FooterDemo";
 import ModularSection from "./ModularDemo";
@@ -40,12 +41,18 @@ const DemoHeader: React.FC = () => {
 
                 {/* Desktop Navigation */}
                 <div className="hidden md:flex gap-10 items-center">
-                    <a
-                        href="/privacy"
+                    <Link
+                        to="/privacy"
                         className="text-sm font-medium text-[var(--muted-text)] hover:text-[var(--text)] transition-colors duration-200"
                     >
                         Privacy
-                    </a>
+                    </Link>
+                    <Link
+                        to="/pricing"
+                        className="text-sm font-medium text-[var(--muted-text)] hover:text-[var(--text)] transition-colors duration-200"
+                    >
+                        Pricing
+                    </Link>
                     <button className="text-sm font-semibold bg-[var(--accent-color)] text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-200 hover:shadow-md">
                         Get Started
                     </button>
@@ -86,13 +93,20 @@ const DemoHeader: React.FC = () => {
             {isMobileMenuOpen && (
                 <div className="md:hidden border-t border-[var(--border)] bg-[var(--bg)]/98 backdrop-blur-sm">
                     <div className="px-4 py-6 space-y-4">
-                        <a
-                            href="/privacy"
+                        <Link
+                            to="/privacy"
                             className="block text-base font-medium text-[var(--muted-text)] hover:text-[var(--text)] transition-colors duration-200 py-2"
                             onClick={() => setIsMobileMenuOpen(false)}
                         >
                             Privacy
-                        </a>
+                        </Link>
+                        <Link
+                            to="/pricing"
+                            className="block text-base font-medium text-[var(--muted-text)] hover:text-[var(--text)] transition-colors duration-200 py-2"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                            Pricing
+                        </Link>
                     </div>
                 </div>
             )}

@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 const Privacy: React.FC = () => {
     return (
@@ -6,18 +7,18 @@ const Privacy: React.FC = () => {
             {/* Header */}
             <header className="fixed top-0 left-0 right-0 bg-[var(--bg)]/95 backdrop-blur-sm z-50 border-b border-[var(--border)]">
                 <nav className="max-w-7xl mx-auto flex justify-between items-center px-4 sm:px-8 py-4 sm:py-6">
-                    <a
-                        href="/"
+                    <Link
+                        to="/"
                         className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--text)]"
                     >
                         LyncX
-                    </a>
-                    <a
-                        href="/"
+                    </Link>
+                    <Link
+                        to="/"
                         className="text-sm font-medium text-[var(--muted-text)] hover:text-[var(--text)] transition-colors duration-200"
                     >
                         Back to Home
-                    </a>
+                    </Link>
                 </nav>
             </header>
 
