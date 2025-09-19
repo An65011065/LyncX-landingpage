@@ -14,6 +14,80 @@ const sessionVideo = "/assets/videos/session.mp4";
 const helpVideo = "/assets/videos/help.mp4";
 const ytVideo = "/assets/videos/yt.mp4";
 const groupVideo = "/assets/videos/group.mp4";
+const lyncxVideo = "/assets/videos/lyncx.mp4";
+
+// Video Modal Component
+const VideoModal: React.FC<{
+    isOpen: boolean;
+    onClose: () => void;
+    videoSrc: string;
+}> = ({ isOpen, onClose, videoSrc }) => {
+    const videoRef = useRef<HTMLVideoElement>(null);
+
+    useEffect(() => {
+        if (isOpen && videoRef.current) {
+            videoRef.current.play().catch(console.error);
+        }
+    }, [isOpen]);
+
+    useEffect(() => {
+        const handleEscape = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                onClose();
+            }
+        };
+
+        if (isOpen) {
+            document.addEventListener('keydown', handleEscape);
+            document.body.style.overflow = 'hidden';
+        }
+
+        return () => {
+            document.removeEventListener('keydown', handleEscape);
+            document.body.style.overflow = 'unset';
+        };
+    }, [isOpen, onClose]);
+
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 z-[9999] bg-black bg-opacity-90 flex items-center justify-center p-4">
+            <div className="relative w-full h-full max-w-6xl max-h-[90vh] flex items-center justify-center">
+                <button
+                    onClick={onClose}
+                    className="absolute top-4 right-4 z-10 text-white hover:text-gray-300 transition-colors duration-200"
+                    aria-label="Close video"
+                >
+                    <svg
+                        className="w-8 h-8"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M6 18L18 6M6 6l12 12"
+                        />
+                    </svg>
+                </button>
+                <video
+                    ref={videoRef}
+                    className="w-full h-full object-contain rounded-lg"
+                    controls
+                    autoPlay
+                    playsInline
+                    preload="auto"
+                    src={videoSrc}
+                    onError={(e) => {
+                        console.error('Video failed to load:', e);
+                    }}
+                />
+            </div>
+        </div>
+    );
+};
 
 const DemoHeader: React.FC = () => {
     const [isScrolled, setIsScrolled] = useState(false);
@@ -128,6 +202,7 @@ const DemoHero: React.FC<{
         a: 1,
     });
     const [isMobile, setIsMobile] = useState(false);
+    const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
 
     // Mobile detection
     useEffect(() => {
@@ -298,7 +373,10 @@ const DemoHero: React.FC<{
                             <button className="px-6 sm:px-8 py-3 sm:py-4 bg-[var(--accent-color)] text-white rounded-lg text-base sm:text-lg font-semibold transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 hover:bg-opacity-95 min-h-[44px]">
                                 Install Free
                             </button>
-                            <button className="px-6 sm:px-8 py-3 sm:py-4 border-2 border-[var(--accent-color)] text-[var(--accent-color)] rounded-lg text-base sm:text-lg font-semibold transition-all duration-300 hover:bg-[var(--accent-color)] hover:text-white min-h-[44px]">
+                            <button 
+                                onClick={() => setIsVideoModalOpen(true)}
+                                className="px-6 sm:px-8 py-3 sm:py-4 border-2 border-[var(--accent-color)] text-[var(--accent-color)] rounded-lg text-base sm:text-lg font-semibold transition-all duration-300 hover:bg-[var(--accent-color)] hover:text-white min-h-[44px]"
+                            >
                                 Watch Demo
                             </button>
                         </div>
@@ -314,6 +392,12 @@ const DemoHero: React.FC<{
                     </div>
                 </div>
             </div>
+            
+            <VideoModal 
+                isOpen={isVideoModalOpen}
+                onClose={() => setIsVideoModalOpen(false)}
+                videoSrc={lyncxVideo}
+            />
         </section>
     );
 };
