@@ -1108,7 +1108,7 @@ const TransitionText: React.FC<{
 const AnimationSpace: React.FC<{
     dataCardRef: React.RefObject<HTMLDivElement>;
     lyncxCardRef: React.RefObject<HTMLDivElement>;
-    viewCardRef: React.RefObject<HTMLDivElement>;
+    viewCardRef: React.RefObject<HTMLButtonElement>;
     animationSpaceRef: React.RefObject<HTMLElement>;
     onDownloadClick: () => void;
 }> = ({ dataCardRef, lyncxCardRef, viewCardRef, animationSpaceRef, onDownloadClick }) => {
@@ -1255,7 +1255,7 @@ export const CommandDemo: React.FC = () => {
     const transitionTextRef = useRef<HTMLElement>(null);
     const dataCardRef = useRef<HTMLDivElement>(null);
     const lyncxCardRef = useRef<HTMLDivElement>(null);
-    const viewCardRef = useRef<HTMLDivElement>(null);
+    const viewCardRef = useRef<HTMLButtonElement>(null);
     const animationSpaceRef = useRef<HTMLElement>(null);
 
     // State
