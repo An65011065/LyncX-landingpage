@@ -4,6 +4,7 @@ import FAQDemo from "./FAQDemo";
 import FooterDemo from "./FooterDemo";
 import ModularSection from "./ModularDemo";
 import { DemoCommandBar, commandBrandColors } from "./DemoCommandBar";
+import { WaitingListModal } from "./WaitingListModal";
 
 // Asset paths - Vite will handle these as static assets
 const visualizationImage = "/assets/visualization.png";
@@ -89,7 +90,7 @@ const VideoModal: React.FC<{
     );
 };
 
-const DemoHeader: React.FC = () => {
+const DemoHeader: React.FC<{ onGetStartedClick: () => void }> = ({ onGetStartedClick }) => {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -127,7 +128,10 @@ const DemoHeader: React.FC = () => {
                     >
                         Pricing
                     </Link>
-                    <button className="text-sm font-semibold bg-[var(--accent-color)] text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-200 hover:shadow-md">
+                    <button 
+                        onClick={onGetStartedClick}
+                        className="text-sm font-semibold bg-[var(--accent-color)] text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-200 hover:shadow-md"
+                    >
                         Get Started
                     </button>
                 </div>
@@ -193,7 +197,8 @@ const DemoHero: React.FC<{
     onCommandChange: (commandIndex: number) => void;
     scrollProgress: number;
     browserRef: React.RefObject<HTMLDivElement>;
-}> = ({ commandBarRef, onCommandChange, scrollProgress, browserRef }) => {
+    onInstallClick: () => void;
+}> = ({ commandBarRef, onCommandChange, scrollProgress, browserRef, onInstallClick }) => {
     const [currentCommandIndex, setCurrentCommandIndex] = useState(0);
     const [interpolatedColor, setInterpolatedColor] = useState({
         r: 225,
@@ -370,7 +375,10 @@ const DemoHero: React.FC<{
                         </p>
 
                         <div className="flex flex-col sm:flex-row gap-4">
-                            <button className="px-6 sm:px-8 py-3 sm:py-4 bg-[var(--accent-color)] text-white rounded-lg text-base sm:text-lg font-semibold transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 hover:bg-opacity-95 min-h-[44px]">
+                            <button 
+                                onClick={onInstallClick}
+                                className="px-6 sm:px-8 py-3 sm:py-4 bg-[var(--accent-color)] text-white rounded-lg text-base sm:text-lg font-semibold transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 hover:bg-opacity-95 min-h-[44px]"
+                            >
                                 Install Free
                             </button>
                             <button 
@@ -1102,7 +1110,8 @@ const AnimationSpace: React.FC<{
     lyncxCardRef: React.RefObject<HTMLDivElement>;
     viewCardRef: React.RefObject<HTMLDivElement>;
     animationSpaceRef: React.RefObject<HTMLElement>;
-}> = ({ dataCardRef, lyncxCardRef, viewCardRef, animationSpaceRef }) => {
+    onDownloadClick: () => void;
+}> = ({ dataCardRef, lyncxCardRef, viewCardRef, animationSpaceRef, onDownloadClick }) => {
     const [activeTab, setActiveTab] = useState<"time" | "domains" | "activity">(
         "time",
     );
@@ -1201,9 +1210,10 @@ const AnimationSpace: React.FC<{
                         or Python.
                     </p>
 
-                    <div
+                    <button
+                        onClick={onDownloadClick}
                         ref={viewCardRef}
-                        className="backdrop-blur-sm rounded-xl border-2 w-[320px] h-[320px] sm:w-80 sm:h-80 lg:w-96 lg:h-96 flex flex-col items-center justify-center gap-6"
+                        className="backdrop-blur-sm rounded-xl border-2 w-[320px] h-[320px] sm:w-80 sm:h-80 lg:w-96 lg:h-96 flex flex-col items-center justify-center gap-6 transition-all duration-300 hover:scale-105 hover:shadow-xl cursor-pointer group"
                         style={{
                             backgroundColor: "#059669",
                             borderColor: "#059669",
@@ -1219,17 +1229,17 @@ const AnimationSpace: React.FC<{
                             strokeWidth="2"
                             strokeLinecap="round"
                             strokeLinejoin="round"
-                            className="text-green-300"
+                            className="text-green-300 group-hover:text-green-200 transition-colors duration-300"
                         >
                             <path d="M12 5v14" />
                             <path d="M19 12l-7 7-7-7" />
                         </svg>
 
                         {/* CSV Text */}
-                        <div className="text-2xl font-bold text-white">
+                        <div className="text-2xl font-bold text-white group-hover:text-green-100 transition-colors duration-300">
                             .CSV
                         </div>
-                    </div>
+                    </button>
                 </div>
             </div>
         </section>
@@ -1250,6 +1260,7 @@ export const CommandDemo: React.FC = () => {
 
     // State
     const [scrollProgress, setScrollProgress] = useState(0);
+    const [isWaitingListOpen, setIsWaitingListOpen] = useState(false);
 
     // Scroll animation effect
     useEffect(() => {
@@ -1340,12 +1351,13 @@ export const CommandDemo: React.FC = () => {
             }}
         >
             {/* Page Content */}
-            <DemoHeader />
+            <DemoHeader onGetStartedClick={() => setIsWaitingListOpen(true)} />
             <DemoHero
                 commandBarRef={commandBarRef}
                 onCommandChange={() => {}}
                 scrollProgress={scrollProgress}
                 browserRef={browserRef}
+                onInstallClick={() => setIsWaitingListOpen(true)}
             />
             <DemoDescription />
             <BrowserFrame
@@ -1359,10 +1371,16 @@ export const CommandDemo: React.FC = () => {
                 lyncxCardRef={lyncxCardRef}
                 viewCardRef={viewCardRef}
                 animationSpaceRef={animationSpaceRef}
+                onDownloadClick={() => setIsWaitingListOpen(true)}
             />
             <ModularSection />
             <FAQDemo />
             <FooterDemo />
+            
+            <WaitingListModal 
+                isOpen={isWaitingListOpen}
+                onClose={() => setIsWaitingListOpen(false)}
+            />
         </div>
     );
 };
